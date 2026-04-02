@@ -1060,7 +1060,7 @@ private final class RepMetroViewModel: NSObject, ObservableObject {
         isPaused = false
         rpe = nil
         move(to: .active)
-        speak("<speak><prosody rate=\"90%\">Set 1 <break time=\"200ms\"/> let's go.</prosody></speak>", delay: 0.3)
+        speak("Set 1. Let's go.", delay: 0.3)
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.6) {
             self.startPhase()
         }
@@ -1084,7 +1084,7 @@ private final class RepMetroViewModel: NSObject, ObservableObject {
         speech.stopSpeaking(at: .immediate)
         currentSet += 1
         impact(style: .heavy)
-        speak("<speak><prosody rate=\"90%\">Set \(currentSet) <break time=\"200ms\"/> let's go.</prosody></speak>", delay: 0.2)
+        speak("Set \(currentSet). Let's go.", delay: 0.2)
         startCurrentSet()
     }
 
@@ -1161,9 +1161,9 @@ private final class RepMetroViewModel: NSObject, ObservableObject {
         speech.stopSpeaking(at: .immediate)
 
         let message = isLastSet
-            ? "<speak><prosody rate=\"85%\">That's a wrap. <break time=\"200ms\"/> \(totalSets) sets done. <break time=\"150ms\"/> Great work today.</prosody></speak>"
-            : "<speak><prosody rate=\"85%\">Set \(currentSet) done. <break time=\"250ms\"/> Take your rest.</prosody></speak>"
-        speak(message)
+            ? "That's a wrap. \(totalSets) sets done. Great work today."
+            : "Set \(currentSet) done. Take your rest."
+        speak(message, rate: 0.47)
 
         rpe = nil
         logWeightText = ""
@@ -1183,7 +1183,7 @@ private final class RepMetroViewModel: NSObject, ObservableObject {
             return
         }
 
-        speak("<speak><prosody rate=\"85%\">Good work. <break time=\"300ms\"/> Rest for \(restSeconds) seconds.</prosody></speak>")
+        speak("Good work. Rest for \(restSeconds) seconds.", rate: 0.48)
         restTimer?.invalidate()
         restTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in
             guard let self else { return }
@@ -1192,11 +1192,11 @@ private final class RepMetroViewModel: NSObject, ObservableObject {
             if self.restRemaining == 10 {
                 self.impact(style: .medium)
                 self.speech.stopSpeaking(at: .immediate)
-                self.speak("<speak><prosody rate=\"90%\">Ten seconds remaining.</prosody></speak>")
+                self.speak("Ten seconds remaining.")
             } else if self.restRemaining == 3 {
                 self.impact(style: .medium)
                 self.speech.stopSpeaking(at: .immediate)
-                self.speak("<speak><prosody rate=\"75%\" pitch=\"+0.5st\">Three <break time=\"450ms\"/> two <break time=\"450ms\"/> one.</prosody></speak>")
+                self.speak("Three. Two. One.", rate: 0.44)
             } else if self.restRemaining <= 0 {
                 self.restTimer?.invalidate()
                 self.skipRest()
@@ -1249,36 +1249,21 @@ private final class RepMetroViewModel: NSObject, ObservableObject {
 
     private func speakPhase() {
         if isEccentric {
-            speak("""
-            <speak><prosody rate="82%" pitch="-1.5st">\
-            Rep <break time="150ms"/> \(currentRep) \
-            <break time="400ms"/> down.\
-            </prosody></speak>
-            """)
+            speak("Rep \(currentRep). Down.", pitch: 0.88, rate: 0.50)
         } else {
-            speak("<speak><prosody rate=\"95%\" pitch=\"+1st\">Drive it up.</prosody></speak>")
+            speak("Drive it up.", pitch: 1.15, rate: 0.52)
         }
     }
 
-    private func speak(_ ssml: String, delay: Double = 0) {
+    private func speak(_ text: String, pitch: Float = 1.0, rate: Float = 0.50, delay: Double = 0) {
         DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
-            if #available(iOS 16, *),
-               let utterance = AVSpeechUtterance(ssmlRepresentation: ssml) {
-                utterance.voice = self.bestVoice
-                utterance.volume = 0.9
-                self.speech.speak(utterance)
-                return
-            }
-            // Fallback for older OS: strip tags and speak plain text
-            let plain = ssml
-                .replacingOccurrences(of: "<[^>]+>", with: " ", options: .regularExpression)
-                .replacingOccurrences(of: "\\s+", with: " ", options: .regularExpression)
-                .trimmingCharacters(in: .whitespaces)
-            let utterance = AVSpeechUtterance(string: plain)
-            utterance.voice = self.bestVoice
-            utterance.rate = 0.50
+            let utterance = AVSpeechUtterance(string: text)
+            utterance.pitchMultiplier = pitch
+            utterance.rate = rate
             utterance.volume = 0.9
             utterance.preUtteranceDelay = 0.05
+            utterance.postUtteranceDelay = 0.08
+            utterance.voice = self.bestVoice
             self.speech.speak(utterance)
         }
     }
