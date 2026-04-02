@@ -1224,7 +1224,7 @@ private final class RepMetroViewModel: NSObject, ObservableObject {
     private var prewarmPhrases: [String] {
         var phrases: [String] = []
         for rep in 1...totalReps { phrases.append("Rep \(rep). Down.") }
-        phrases.append("Drive it up.")
+        phrases.append("Up.")
         phrases.append("Good work. Rest for \(restSeconds) seconds.")
         phrases.append("Ten seconds remaining.")
         phrases.append("Three. Two. One.")
@@ -1419,7 +1419,7 @@ private final class RepMetroViewModel: NSObject, ObservableObject {
         if isEccentric {
             speak("Rep \(currentRep). Down.")
         } else {
-            speak("Drive it up.")
+            speak("Up.")
         }
     }
 
