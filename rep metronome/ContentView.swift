@@ -961,7 +961,6 @@ private struct PressButtonStyle: ButtonStyle {
     }
 }
 
-@MainActor
 private final class ElevenLabsService {
     // Voice: "Adam" — authoritative, clear, works well for coaching
     static let voiceID = "pMsXgVXv3BLzUgSXRplE"
