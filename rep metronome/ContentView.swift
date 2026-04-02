@@ -173,17 +173,15 @@ private struct SetupScreen: View {
 
                             Spacer()
 
-                            Text("▼")
-                                .font(.system(size: 11, weight: .medium, design: .monospaced))
+                            Image(systemName: "chevron.down")
+                                .font(.system(size: 11, weight: .semibold))
                                 .foregroundStyle(AppTheme.dust)
                         }
                         .padding(.horizontal, 16)
                         .padding(.vertical, 14)
                         .background(AppTheme.panel)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 0)
-                                .stroke(AppTheme.rim, lineWidth: 1)
-                        )
+                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                        .overlay(RoundedRectangle(cornerRadius: 8).stroke(AppTheme.rim, lineWidth: 1))
                     }
                     .buttonStyle(.plain)
 
@@ -208,6 +206,7 @@ private struct SetupScreen: View {
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 20)
                             .background(AppTheme.blood)
+                            .clipShape(RoundedRectangle(cornerRadius: 8))
                     }
                     .buttonStyle(PressButtonStyle(pressedColor: AppTheme.rose))
                     .padding(.top, 8)
@@ -248,7 +247,7 @@ private struct ActiveScreen: View {
                         .padding(.horizontal, 12)
                         .padding(.vertical, 5)
                         .overlay(
-                            RoundedRectangle(cornerRadius: 0)
+                            RoundedRectangle(cornerRadius: 8)
                                 .stroke(AppTheme.rim, lineWidth: 1)
                         )
 
@@ -263,7 +262,7 @@ private struct ActiveScreen: View {
                     .padding(.horizontal, 12)
                     .padding(.vertical, 5)
                     .overlay(
-                        RoundedRectangle(cornerRadius: 0)
+                        RoundedRectangle(cornerRadius: 8)
                             .stroke(AppTheme.rim, lineWidth: 1)
                     )
                 }
@@ -292,8 +291,9 @@ private struct ActiveScreen: View {
                     Text(viewModel.phaseTitle)
                         .font(.system(size: 84, weight: .bold, design: .rounded))
                         .tracking(12)
-                        .foregroundStyle(AppTheme.parch)
-                        .shadow(color: AppTheme.parch.opacity(0.2), radius: 20)
+                        .foregroundStyle(viewModel.isEccentric ? AppTheme.parch : AppTheme.rose)
+                        .shadow(color: (viewModel.isEccentric ? AppTheme.parch : AppTheme.rose).opacity(0.25), radius: 24)
+                        .animation(.easeInOut(duration: 0.25), value: viewModel.isEccentric)
 
                     Text(viewModel.phaseSubtitle)
                         .font(.system(size: 9, weight: .medium, design: .monospaced))
@@ -319,7 +319,7 @@ private struct ActiveScreen: View {
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 16)
                         .overlay(
-                            RoundedRectangle(cornerRadius: 0)
+                            RoundedRectangle(cornerRadius: 8)
                                 .stroke(viewModel.isPaused ? AppTheme.blood : AppTheme.rim, lineWidth: 1)
                         )
                         .background(viewModel.isPaused ? AppTheme.panel.opacity(0.18) : .clear)
@@ -386,6 +386,7 @@ private struct RestScreen: View {
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 20)
                         .background(AppTheme.blood)
+                        .clipShape(RoundedRectangle(cornerRadius: 8))
                 }
                 .buttonStyle(PressButtonStyle(pressedColor: AppTheme.rose))
 
@@ -400,7 +401,7 @@ private struct RestScreen: View {
                 }
                 .buttonStyle(.plain)
                 .overlay(
-                    RoundedRectangle(cornerRadius: 0)
+                    RoundedRectangle(cornerRadius: 8)
                         .stroke(AppTheme.rim, lineWidth: 1)
                 )
             }
@@ -442,7 +443,7 @@ private struct LogScreen: View {
                     StatCell(value: "\(viewModel.concentricSeconds)s", label: "Con")
                 }
                 .overlay(
-                    RoundedRectangle(cornerRadius: 0)
+                    RoundedRectangle(cornerRadius: 8)
                         .stroke(AppTheme.rim, lineWidth: 1)
                 )
                 .padding(.bottom, 24)
@@ -465,10 +466,10 @@ private struct LogScreen: View {
                                 .frame(maxWidth: .infinity)
                                 .padding(.vertical, 11)
                                 .background(viewModel.rpe == value ? AppTheme.blood : AppTheme.panel)
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 0)
-                                        .stroke(viewModel.rpe == value ? AppTheme.blood : AppTheme.rim, lineWidth: 1)
-                                )
+                                .clipShape(RoundedRectangle(cornerRadius: 8))
+                                .overlay(RoundedRectangle(cornerRadius: 8).stroke(viewModel.rpe == value ? AppTheme.blood : AppTheme.rim, lineWidth: 1))
+                                .scaleEffect(viewModel.rpe == value ? 1.04 : 1.0)
+                                .animation(.spring(response: 0.2, dampingFraction: 0.6), value: viewModel.rpe)
                         }
                         .buttonStyle(.plain)
                     }
@@ -512,10 +513,8 @@ private struct LogScreen: View {
                         .padding(.horizontal, 12)
                         .padding(.vertical, 14)
                         .background(AppTheme.panel)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 0)
-                                .stroke(AppTheme.rim, lineWidth: 1)
-                        )
+                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                        .overlay(RoundedRectangle(cornerRadius: 8).stroke(AppTheme.rim, lineWidth: 1))
                     }
 
                     Text(viewModel.weightHint)
@@ -534,62 +533,60 @@ private struct LogScreen: View {
                     .padding(.horizontal, 16)
                     .padding(.vertical, 12)
                     .background(AppTheme.panel)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 0)
-                            .stroke(AppTheme.rim, lineWidth: 1)
-                    )
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                    .overlay(RoundedRectangle(cornerRadius: 8).stroke(AppTheme.rim, lineWidth: 1))
                     .padding(.bottom, 24)
 
-                HStack(spacing: 8) {
-                    Button {
-                        viewModel.logAndContinue()
-                    } label: {
-                        Text(viewModel.isLastSet ? "LOG SET" : "LOG + REST")
-                            .font(.system(size: 15, weight: .bold, design: .rounded))
-                            .tracking(3)
-                            .foregroundStyle(AppTheme.fog)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 15)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 0)
-                                    .stroke(AppTheme.rim, lineWidth: 1)
-                            )
-                    }
-                    .buttonStyle(.plain)
+                // Primary action — filled
+                Button {
+                    viewModel.logAndContinue()
+                } label: {
+                    Text(viewModel.isLastSet ? "LOG SET" : "LOG + REST")
+                        .font(.system(size: 18, weight: .bold, design: .rounded))
+                        .tracking(4)
+                        .foregroundStyle(AppTheme.parch)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 18)
+                        .background(AppTheme.blood)
+                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                }
+                .buttonStyle(PressButtonStyle(pressedColor: AppTheme.rose))
+                .padding(.bottom, 8)
 
+                HStack(spacing: 8) {
+                    // Secondary action
                     Button {
                         viewModel.logAndFinish()
                     } label: {
                         Text("LOG + DONE")
-                            .font(.system(size: 15, weight: .bold, design: .rounded))
+                            .font(.system(size: 14, weight: .bold, design: .rounded))
                             .tracking(3)
                             .foregroundStyle(AppTheme.fog)
                             .frame(maxWidth: .infinity)
-                            .padding(.vertical, 15)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 0)
-                                    .stroke(AppTheme.rim, lineWidth: 1)
-                            )
+                            .padding(.vertical, 13)
+                            .background(AppTheme.panel)
+                            .clipShape(RoundedRectangle(cornerRadius: 8))
+                            .overlay(RoundedRectangle(cornerRadius: 8).stroke(AppTheme.rim, lineWidth: 1))
+                    }
+                    .buttonStyle(.plain)
+
+                    // Tertiary action
+                    Button {
+                        viewModel.skipLog()
+                    } label: {
+                        Text(viewModel.isLastSet ? "SKIP" : "SKIP → REST")
+                            .font(.system(size: 14, weight: .medium, design: .monospaced))
+                            .tracking(3)
+                            .foregroundStyle(AppTheme.dust)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 13)
+                            .background(AppTheme.panel)
+                            .clipShape(RoundedRectangle(cornerRadius: 8))
+                            .overlay(RoundedRectangle(cornerRadius: 8).stroke(AppTheme.rim, lineWidth: 1))
                     }
                     .buttonStyle(.plain)
                 }
                 .padding(.bottom, 10)
-
-                Button {
-                    viewModel.skipLog()
-                } label: {
-                    Text(viewModel.isLastSet ? "SKIP" : "SKIP → REST")
-                        .font(.system(size: 14, weight: .medium, design: .monospaced))
-                        .tracking(4)
-                        .foregroundStyle(AppTheme.fog)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 14)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 0)
-                                .stroke(AppTheme.rim, lineWidth: 1)
-                        )
-                }
-                .buttonStyle(.plain)
             }
             .padding(.horizontal, 24)
             .padding(.top, 40)
@@ -621,7 +618,7 @@ private struct ExerciseModal: View {
                 .padding(.horizontal, 12)
                 .padding(.vertical, 6)
                 .overlay(
-                    RoundedRectangle(cornerRadius: 0)
+                    RoundedRectangle(cornerRadius: 8)
                         .stroke(AppTheme.rim, lineWidth: 1)
                 )
             }
@@ -676,7 +673,7 @@ private struct ExerciseModal: View {
                                         .padding(.horizontal, 8)
                                         .padding(.vertical, 3)
                                         .overlay(
-                                            RoundedRectangle(cornerRadius: 0)
+                                            RoundedRectangle(cornerRadius: 8)
                                                 .stroke(AppTheme.rim, lineWidth: 1)
                                         )
                                 }
@@ -738,10 +735,8 @@ private struct NumberCell: View {
         .padding(.vertical, title.isEmpty ? 10 : 14)
         .frame(maxWidth: .infinity, alignment: alignLeading ? .leading : .center)
         .background(AppTheme.panel)
-        .overlay(
-            RoundedRectangle(cornerRadius: 0)
-                .stroke(AppTheme.rim, lineWidth: 1)
-        )
+        .clipShape(RoundedRectangle(cornerRadius: 8))
+        .overlay(RoundedRectangle(cornerRadius: 8).stroke(AppTheme.rim, lineWidth: 1))
     }
 }
 
@@ -765,10 +760,8 @@ private struct PhaseChip: View {
         .padding(.horizontal, 14)
         .padding(.vertical, 10)
         .background(AppTheme.panel)
-        .overlay(
-            RoundedRectangle(cornerRadius: 0)
-                .stroke(AppTheme.rim, lineWidth: 1)
-        )
+        .clipShape(RoundedRectangle(cornerRadius: 8))
+        .overlay(RoundedRectangle(cornerRadius: 8).stroke(AppTheme.rim, lineWidth: 1))
     }
 }
 
@@ -870,10 +863,8 @@ private struct LogField<Content: View>: View {
                 .padding(.horizontal, 16)
                 .padding(.vertical, 13)
                 .background(AppTheme.panel)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 0)
-                        .stroke(AppTheme.rim, lineWidth: 1)
-                )
+                .clipShape(RoundedRectangle(cornerRadius: 8))
+                .overlay(RoundedRectangle(cornerRadius: 8).stroke(AppTheme.rim, lineWidth: 1))
         }
         .padding(.bottom, 16)
     }
