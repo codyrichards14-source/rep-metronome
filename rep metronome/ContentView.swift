@@ -198,31 +198,6 @@ private struct SetupScreen: View {
                         NumberCell(title: "Seconds Up", text: viewModel.binding(for: \.concentricText), alignLeading: false)
                     }
 
-                    FieldGroup(label: "ElevenLabs Voice") {
-                        HStack(spacing: 12) {
-                            SecureField("PASTE API KEY", text: $viewModel.elevenLabsKey)
-                                .font(.system(size: 12, weight: .medium, design: .monospaced))
-                                .foregroundStyle(AppTheme.parch)
-                                .autocorrectionDisabled()
-                                .textInputAutocapitalization(.never)
-                            if !viewModel.elevenLabsKey.isEmpty {
-                                Image(systemName: "checkmark.circle.fill")
-                                    .font(.system(size: 14))
-                                    .foregroundStyle(AppTheme.rose)
-                            }
-                        }
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 14)
-                        .background(AppTheme.panel)
-                        .overlay(Rectangle().stroke(AppTheme.rim, lineWidth: 1))
-
-                        Text("Without a key, falls back to the system voice.")
-                            .font(.system(size: 9, weight: .medium, design: .monospaced))
-                            .tracking(1)
-                            .foregroundStyle(AppTheme.dust)
-                            .padding(.top, 4)
-                    }
-
                     Button {
                         viewModel.beginWorkout()
                     } label: {
@@ -961,140 +936,6 @@ private struct PressButtonStyle: ButtonStyle {
     }
 }
 
-private final class ElevenLabsService {
-    // Voice: "Adam" — authoritative, clear, works well for coaching
-    static let voiceID = "pMsXgVXv3BLzUgSXRplE"
-    static let modelID = "eleven_turbo_v2_5"
-
-    private var player: AVAudioPlayer?
-    private var currentTask: Task<Void, Never>?
-    private let cacheDir: URL
-
-    // Fallback when no API key or network fails
-    private let synth = AVSpeechSynthesizer()
-    private lazy var fallbackVoice: AVSpeechSynthesisVoice = {
-        let voices = AVSpeechSynthesisVoice.speechVoices()
-        return voices.first(where: { $0.language.hasPrefix("en-US") && $0.quality == .premium })
-            ?? voices.first(where: { $0.language.hasPrefix("en-US") && $0.quality == .enhanced })
-            ?? AVSpeechSynthesisVoice(language: "en-US")
-            ?? voices[0]
-    }()
-
-    init() {
-        let caches = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask)[0]
-        cacheDir = caches.appendingPathComponent("elevenlabs", isDirectory: true)
-        try? FileManager.default.createDirectory(at: cacheDir, withIntermediateDirectories: true)
-        configureAudioSession()
-    }
-
-    // MARK: - Public
-
-    func speak(_ text: String, delay: Double = 0) {
-        currentTask?.cancel()
-        currentTask = Task {
-            if delay > 0 {
-                try? await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000))
-            }
-            guard !Task.isCancelled else { return }
-            let apiKey = UserDefaults.standard.string(forKey: "elevenLabsAPIKey") ?? ""
-            if apiKey.isEmpty {
-                speakFallback(text)
-                return
-            }
-            if let url = await fetchOrLoad(text, apiKey: apiKey) {
-                guard !Task.isCancelled else { return }
-                play(url)
-            } else {
-                speakFallback(text)
-            }
-        }
-    }
-
-    func stopAll() {
-        currentTask?.cancel()
-        player?.stop()
-        synth.stopSpeaking(at: .immediate)
-    }
-
-    /// Pre-fetch all phrases for a workout so playback is instant
-    func prewarm(_ phrases: [String]) {
-        let apiKey = UserDefaults.standard.string(forKey: "elevenLabsAPIKey") ?? ""
-        guard !apiKey.isEmpty else { return }
-        Task.detached(priority: .background) { [weak self] in
-            guard let self else { return }
-            for phrase in phrases {
-                guard !Task.isCancelled else { break }
-                _ = await self.fetchOrLoad(phrase, apiKey: apiKey)
-            }
-        }
-    }
-
-    // MARK: - Private
-
-    private func fetchOrLoad(_ text: String, apiKey: String) async -> URL? {
-        let url = cacheDir.appendingPathComponent(cacheFilename(for: text))
-        if FileManager.default.fileExists(atPath: url.path) { return url }
-        return await fetch(text, apiKey: apiKey, saveTo: url)
-    }
-
-    private func fetch(_ text: String, apiKey: String, saveTo dest: URL) async -> URL? {
-        guard let endpoint = URL(string: "https://api.elevenlabs.io/v1/text-to-speech/\(Self.voiceID)") else { return nil }
-        var req = URLRequest(url: endpoint)
-        req.httpMethod = "POST"
-        req.setValue(apiKey, forHTTPHeaderField: "xi-api-key")
-        req.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        let body: [String: Any] = [
-            "text": text,
-            "model_id": Self.modelID,
-            "voice_settings": [
-                "stability": 0.40,
-                "similarity_boost": 0.75,
-                "style": 0.35,
-                "use_speaker_boost": true
-            ]
-        ]
-        guard let httpBody = try? JSONSerialization.data(withJSONObject: body) else { return nil }
-        req.httpBody = httpBody
-        do {
-            let (data, response) = try await URLSession.shared.data(for: req)
-            guard (response as? HTTPURLResponse)?.statusCode == 200 else { return nil }
-            try data.write(to: dest)
-            return dest
-        } catch {
-            return nil
-        }
-    }
-
-    private func play(_ url: URL) {
-        do {
-            player = try AVAudioPlayer(contentsOf: url)
-            player?.prepareToPlay()
-            player?.play()
-        } catch {}
-    }
-
-    private func speakFallback(_ text: String) {
-        let utterance = AVSpeechUtterance(string: text)
-        utterance.voice = fallbackVoice
-        utterance.rate = 0.50
-        utterance.volume = 0.9
-        utterance.preUtteranceDelay = 0.05
-        synth.speak(utterance)
-    }
-
-    private func cacheFilename(for text: String) -> String {
-        let encoded = Data(text.utf8).base64EncodedString()
-            .replacingOccurrences(of: "/", with: "_")
-            .replacingOccurrences(of: "+", with: "-")
-            .replacingOccurrences(of: "=", with: "")
-        return "\(Self.voiceID)_\(encoded).mp3"
-    }
-
-    private func configureAudioSession() {
-        try? AVAudioSession.sharedInstance().setCategory(.playback, mode: .default, options: [.duckOthers])
-        try? AVAudioSession.sharedInstance().setActive(true)
-    }
-}
 
 private final class RepMetroViewModel: NSObject, ObservableObject {
     @Published var currentScreen: Screen = .setup
@@ -1123,13 +964,16 @@ private final class RepMetroViewModel: NSObject, ObservableObject {
     @Published var logWeightText = ""
     @Published var logUnit = "kg"
 
-    @Published var elevenLabsKey: String = UserDefaults.standard.string(forKey: "elevenLabsAPIKey") ?? "" {
-        didSet { UserDefaults.standard.set(elevenLabsKey, forKey: "elevenLabsAPIKey") }
-    }
-
     let exerciseSections = ExerciseSection.library
 
-    private let tts = ElevenLabsService()
+    private let speech = AVSpeechSynthesizer()
+    private lazy var bestVoice: AVSpeechSynthesisVoice = {
+        let voices = AVSpeechSynthesisVoice.speechVoices()
+        return voices.first(where: { $0.language.hasPrefix("en-US") && $0.quality == .premium })
+            ?? voices.first(where: { $0.language.hasPrefix("en-US") && $0.quality == .enhanced })
+            ?? AVSpeechSynthesisVoice(language: "en-US")
+            ?? voices[0]
+    }()
     private var phaseTimer: Timer?
     private var restTimer: Timer?
     private var splashTask: Task<Void, Never>?
@@ -1213,7 +1057,6 @@ private final class RepMetroViewModel: NSObject, ObservableObject {
         isEccentric = true
         isPaused = false
         rpe = nil
-        tts.prewarm(prewarmPhrases)
         move(to: .active)
         speak("Set 1. Let's go.", delay: 0.3)
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.6) {
@@ -1221,35 +1064,22 @@ private final class RepMetroViewModel: NSObject, ObservableObject {
         }
     }
 
-    private var prewarmPhrases: [String] {
-        var phrases: [String] = []
-        for rep in 1...totalReps { phrases.append("Rep \(rep). Down.") }
-        phrases.append("Up.")
-        phrases.append("Good work. Rest for \(restSeconds) seconds.")
-        phrases.append("Ten seconds remaining.")
-        phrases.append("Three. Two. One.")
-        for set in 2...max(totalSets, 2) { phrases.append("Set \(set). Let's go.") }
-        for set in 1..<totalSets { phrases.append("Set \(set) done. Take your rest.") }
-        phrases.append("That's a wrap. \(totalSets) sets done. Great work today.")
-        return phrases
-    }
-
     func togglePause() {
         isPaused.toggle()
         if isPaused {
-            tts.stopAll()
+            speech.stopSpeaking(at: .immediate)
         }
     }
 
     func stopWorkout() {
         invalidateTimers()
-        tts.stopAll()
+        speech.stopSpeaking(at: .immediate)
         move(to: .setup)
     }
 
     func skipRest() {
         restTimer?.invalidate()
-        tts.stopAll()
+        speech.stopSpeaking(at: .immediate)
         currentSet += 1
         impact(style: .heavy)
         speak("Set \(currentSet). Let's go.", delay: 0.2)
@@ -1326,7 +1156,7 @@ private final class RepMetroViewModel: NSObject, ObservableObject {
     private func finishSet() {
         phaseTimer?.invalidate()
         notification(type: .success)
-        tts.stopAll()
+        speech.stopSpeaking(at: .immediate)
 
         let message = isLastSet
             ? "That's a wrap. \(totalSets) sets done. Great work today."
@@ -1359,11 +1189,11 @@ private final class RepMetroViewModel: NSObject, ObservableObject {
 
             if self.restRemaining == 10 {
                 self.impact(style: .medium)
-                self.tts.stopAll()
+                self.speech.stopSpeaking(at: .immediate)
                 self.speak("Ten seconds remaining.")
             } else if self.restRemaining == 3 {
                 self.impact(style: .medium)
-                self.tts.stopAll()
+                self.speech.stopSpeaking(at: .immediate)
                 self.speak("Three. Two. One.")
             } else if self.restRemaining <= 0 {
                 self.restTimer?.invalidate()
@@ -1395,7 +1225,7 @@ private final class RepMetroViewModel: NSObject, ObservableObject {
         currentScreen = screen
         if screen == .setup {
             invalidateTimers()
-            tts.stopAll()
+            speech.stopSpeaking(at: .immediate)
         }
     }
 
@@ -1424,7 +1254,15 @@ private final class RepMetroViewModel: NSObject, ObservableObject {
     }
 
     private func speak(_ text: String, delay: Double = 0) {
-        tts.speak(text, delay: delay)
+        DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+            let utterance = AVSpeechUtterance(string: text)
+            utterance.voice = self.bestVoice
+            utterance.rate = 0.50
+            utterance.volume = 0.9
+            utterance.preUtteranceDelay = 0.05
+            utterance.postUtteranceDelay = 0.08
+            self.speech.speak(utterance)
+        }
     }
 
     private func impact(style: UIImpactFeedbackGenerator.FeedbackStyle) {
