@@ -965,11 +965,18 @@ private final class RepMetroViewModel: NSObject, ObservableObject {
             ?? AVSpeechSynthesisVoice(language: "en-US")
             ?? voices[0]
     }()
+    private var audioPlayer: AVAudioPlayer?
     private var phaseTimer: Timer?
     private var restTimer: Timer?
     private var splashTask: Task<Void, Never>?
     private let storage = WorkoutLogStore()
     private var hasStartedSplash = false
+
+    override init() {
+        super.init()
+        try? AVAudioSession.sharedInstance().setCategory(.playback, mode: .default, options: [.duckOthers])
+        try? AVAudioSession.sharedInstance().setActive(true)
+    }
 
     func startSplashSequence() {
         guard !hasStartedSplash else { return }
@@ -1058,19 +1065,19 @@ private final class RepMetroViewModel: NSObject, ObservableObject {
     func togglePause() {
         isPaused.toggle()
         if isPaused {
-            speech.stopSpeaking(at: .immediate)
+            stopAudio()
         }
     }
 
     func stopWorkout() {
         invalidateTimers()
-        speech.stopSpeaking(at: .immediate)
+        stopAudio()
         move(to: .setup)
     }
 
     func skipRest() {
         restTimer?.invalidate()
-        speech.stopSpeaking(at: .immediate)
+        stopAudio()
         currentSet += 1
         impact(style: .heavy)
         speak("Set \(currentSet). Let's go.", delay: 0.2)
@@ -1147,7 +1154,7 @@ private final class RepMetroViewModel: NSObject, ObservableObject {
     private func finishSet() {
         phaseTimer?.invalidate()
         notification(type: .success)
-        speech.stopSpeaking(at: .immediate)
+        stopAudio()
 
         let message = isLastSet
             ? "That's a wrap. \(totalSets) sets done. Great work today."
@@ -1180,11 +1187,11 @@ private final class RepMetroViewModel: NSObject, ObservableObject {
 
             if self.restRemaining == 10 {
                 self.impact(style: .medium)
-                self.speech.stopSpeaking(at: .immediate)
+                self.stopAudio()
                 self.speak("Ten seconds remaining.")
             } else if self.restRemaining == 3 {
                 self.impact(style: .medium)
-                self.speech.stopSpeaking(at: .immediate)
+                self.stopAudio()
                 self.speak("Three. Two. One.")
             } else if self.restRemaining <= 0 {
                 self.restTimer?.invalidate()
@@ -1216,7 +1223,7 @@ private final class RepMetroViewModel: NSObject, ObservableObject {
         currentScreen = screen
         if screen == .setup {
             invalidateTimers()
-            speech.stopSpeaking(at: .immediate)
+            stopAudio()
         }
     }
 
@@ -1246,6 +1253,16 @@ private final class RepMetroViewModel: NSObject, ObservableObject {
 
     private func speak(_ text: String, delay: Double = 0) {
         DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+            // Try pre-generated bundle audio first
+            if let key = Self.bundleKey(for: text),
+               let url = Bundle.main.url(forResource: key, withExtension: "mp3") {
+                if let player = try? AVAudioPlayer(contentsOf: url) {
+                    self.audioPlayer = player
+                    player.play()
+                    return
+                }
+            }
+            // Fallback: system voice
             let utterance = AVSpeechUtterance(string: text)
             utterance.voice = self.bestVoice
             utterance.rate = 0.50
@@ -1254,6 +1271,40 @@ private final class RepMetroViewModel: NSObject, ObservableObject {
             utterance.postUtteranceDelay = 0.08
             self.speech.speak(utterance)
         }
+    }
+
+    private static func bundleKey(for text: String) -> String? {
+        switch text {
+        case "Up.":                    return "up"
+        case "Ten seconds remaining.": return "ten_seconds"
+        case "Three. Two. One.":       return "countdown"
+        default: break
+        }
+        if text.hasSuffix(". Down."), let n = Int(text.dropLast(7)) {
+            return "down_\(n)"
+        }
+        if text.hasPrefix("Set ") && text.hasSuffix(". Let's go.") {
+            let mid = text.dropFirst(4).dropLast(11)
+            if let n = Int(mid) { return "set_go_\(n)" }
+        }
+        if text.hasPrefix("Set ") && text.hasSuffix(" done. Take your rest.") {
+            let mid = text.dropFirst(4).dropLast(22)
+            if let n = Int(mid) { return "set_done_\(n)" }
+        }
+        if text.hasPrefix("That's a wrap. ") {
+            let parts = text.dropFirst(15).components(separatedBy: " ")
+            if let n = Int(parts[0]) { return "complete_\(n)" }
+        }
+        if text.hasPrefix("Good work. Rest for ") && text.hasSuffix(" seconds.") {
+            let mid = text.dropFirst(20).dropLast(9)
+            if let n = Int(mid) { return "rest_\(n)" }
+        }
+        return nil
+    }
+
+    private func stopAudio() {
+        audioPlayer?.stop()
+        speech.stopSpeaking(at: .immediate)
     }
 
     private func impact(style: UIImpactFeedbackGenerator.FeedbackStyle) {
