@@ -1253,10 +1253,11 @@ private final class RepMetroViewModel: NSObject, ObservableObject {
 
     private func speak(_ text: String, delay: Double = 0) {
         DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
-            // Try pre-generated bundle audio first
-            if let key = Self.bundleKey(for: text),
-               let url = Bundle.main.url(forResource: key, withExtension: "mp3") {
-                if let player = try? AVAudioPlayer(contentsOf: url) {
+            // Try pre-generated bundle audio first (root or AudioCues subfolder)
+            if let key = Self.bundleKey(for: text) {
+                let url = Bundle.main.url(forResource: key, withExtension: "mp3")
+                    ?? Bundle.main.url(forResource: key, withExtension: "mp3", subdirectory: "AudioCues")
+                if let url, let player = try? AVAudioPlayer(contentsOf: url) {
                     self.audioPlayer = player
                     player.play()
                     return
