@@ -1238,7 +1238,7 @@ private final class RepMetroViewModel: NSObject, ObservableObject {
 
     private func speakPhase() {
         if isEccentric {
-            speak("Rep \(currentRep). Down.")
+            speak("\(currentRep). Down.")
         } else {
             speak("Up.")
         }
