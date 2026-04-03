@@ -1143,8 +1143,10 @@ private final class RepMetroViewModel: NSObject, ObservableObject {
             isEccentric = false
             startPhase()
         } else if currentRep >= totalReps {
+            speakRepComplete()
             finishSet()
         } else {
+            speakRepComplete()
             currentRep += 1
             isEccentric = true
             startPhase()
@@ -1245,10 +1247,14 @@ private final class RepMetroViewModel: NSObject, ObservableObject {
 
     private func speakPhase() {
         if isEccentric {
-            speak("\(currentRep). Down.")
+            speak("Down.")
         } else {
             speak("Up.")
         }
+    }
+
+    private func speakRepComplete() {
+        speak("\(currentRep).")
     }
 
     private func speak(_ text: String, delay: Double = 0) {
@@ -1276,13 +1282,15 @@ private final class RepMetroViewModel: NSObject, ObservableObject {
 
     private static func bundleKey(for text: String) -> String? {
         switch text {
+        case "Down.":                  return "down"
         case "Up.":                    return "up"
         case "Ten seconds remaining.": return "ten_seconds"
         case "Three. Two. One.":       return "countdown"
         default: break
         }
-        if text.hasSuffix(". Down."), let n = Int(text.dropLast(7)) {
-            return "down_\(n)"
+        // Rep complete number cue e.g. "1." "2."
+        if text.hasSuffix("."), let n = Int(text.dropLast(1)) {
+            return "rep_\(n)"
         }
         if text.hasPrefix("Set ") && text.hasSuffix(". Let's go.") {
             let mid = text.dropFirst(4).dropLast(11)
