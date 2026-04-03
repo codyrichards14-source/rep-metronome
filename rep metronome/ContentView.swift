@@ -1119,11 +1119,11 @@ private final class RepMetroViewModel: NSObject, ObservableObject {
         startPhase()
     }
 
-    private func startPhase() {
+    private func startPhase(speechDelay: Double = 0) {
         phaseTimer?.invalidate()
         phaseDuration = Double(isEccentric ? eccentricSeconds : concentricSeconds)
         phaseElapsed = 0
-        speakPhase()
+        speakPhase(delay: speechDelay)
         impact(style: isEccentric ? .medium : .light)
 
         phaseTimer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { [weak self] _ in
@@ -1149,7 +1149,7 @@ private final class RepMetroViewModel: NSObject, ObservableObject {
             speakRepComplete()
             currentRep += 1
             isEccentric = true
-            startPhase()
+            startPhase(speechDelay: 0.65)
         }
     }
 
@@ -1245,9 +1245,9 @@ private final class RepMetroViewModel: NSObject, ObservableObject {
         isPaused = false
     }
 
-    private func speakPhase() {
+    private func speakPhase(delay: Double = 0) {
         if isEccentric {
-            speak("Down.")
+            speak("Down.", delay: delay)
         } else {
             speak("Up.")
         }
