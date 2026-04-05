@@ -540,9 +540,9 @@ private struct RestScreen: View {
             Spacer()
 
             Text("RECOVERY")
-                .font(.system(size: 9, weight: .medium, design: .monospaced))
+                .font(.system(size: 11, weight: .semibold, design: .monospaced))
                 .tracking(6)
-                .foregroundStyle(AppTheme.dust)
+                .foregroundStyle(AppTheme.fog)
                 .padding(.bottom, 8)
 
             Text("\(viewModel.restRemaining)")
@@ -550,16 +550,16 @@ private struct RestScreen: View {
                 .foregroundStyle(viewModel.restRemaining <= 10 ? AppTheme.rose : AppTheme.parch)
 
             Text("SECONDS REMAINING")
-                .font(.system(size: 9, weight: .medium, design: .monospaced))
-                .tracking(6)
-                .foregroundStyle(AppTheme.dust)
+                .font(.system(size: 11, weight: .semibold, design: .monospaced))
+                .tracking(5)
+                .foregroundStyle(AppTheme.fog)
                 .padding(.top, 4)
                 .padding(.bottom, 40)
 
             Text("SET \(viewModel.currentSet) OF \(viewModel.totalSets) COMPLETE")
-                .font(.system(size: 9, weight: .medium, design: .monospaced))
+                .font(.system(size: 11, weight: .semibold, design: .monospaced))
                 .tracking(4)
-                .foregroundStyle(AppTheme.dust)
+                .foregroundStyle(AppTheme.fog)
                 .padding(.bottom, 40)
 
             GeometryReader { geometry in
@@ -620,9 +620,9 @@ private struct LogScreen: View {
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: 0) {
                 Text(viewModel.isLastSet ? "WORKOUT COMPLETE" : "WELL DONE")
-                    .font(.system(size: 9, weight: .medium, design: .monospaced))
+                    .font(.system(size: 11, weight: .semibold, design: .monospaced))
                     .tracking(6)
-                    .foregroundStyle(AppTheme.dust)
+                    .foregroundStyle(AppTheme.fog)
                     .padding(.bottom, 6)
 
                 Text(viewModel.isLastSet ? "DONE" : "SET DONE")
@@ -632,9 +632,9 @@ private struct LogScreen: View {
                     .padding(.bottom, 4)
 
                 Text("SET \(viewModel.currentSet) OF \(viewModel.totalSets)")
-                    .font(.system(size: 9, weight: .medium, design: .monospaced))
+                    .font(.system(size: 11, weight: .semibold, design: .monospaced))
                     .tracking(4)
-                    .foregroundStyle(AppTheme.dust)
+                    .foregroundStyle(AppTheme.fog)
                     .padding(.bottom, 28)
 
                 HStack(spacing: 0) {
@@ -649,9 +649,9 @@ private struct LogScreen: View {
                 .padding(.bottom, 24)
 
                 Text("Rate of Perceived Exertion")
-                    .font(.system(size: 9, weight: .medium, design: .monospaced))
+                    .font(.system(size: 11, weight: .semibold, design: .monospaced))
                     .tracking(4)
-                    .foregroundStyle(AppTheme.dust)
+                    .foregroundStyle(AppTheme.fog)
                     .textCase(.uppercase)
                     .padding(.bottom, 8)
 
@@ -662,7 +662,7 @@ private struct LogScreen: View {
                         } label: {
                             Text("\(value)")
                                 .font(.system(size: 18, weight: .bold, design: .rounded))
-                                .foregroundStyle(viewModel.rpe == value ? AppTheme.parch : AppTheme.dust)
+                                .foregroundStyle(viewModel.rpe == value ? AppTheme.parch : AppTheme.fog)
                                 .frame(maxWidth: .infinity)
                                 .padding(.vertical, 11)
                                 .background(viewModel.rpe == value ? AppTheme.blood : AppTheme.panel)
@@ -677,9 +677,9 @@ private struct LogScreen: View {
                 .padding(.bottom, 6)
 
                 Text(viewModel.rpeHint)
-                    .font(.system(size: 9, weight: .medium, design: .monospaced))
+                    .font(.system(size: 11, weight: .medium, design: .monospaced))
                     .tracking(2)
-                    .foregroundStyle(AppTheme.dust)
+                    .foregroundStyle(AppTheme.fog)
                     .frame(minHeight: 14, alignment: .leading)
                     .padding(.bottom, 20)
 
