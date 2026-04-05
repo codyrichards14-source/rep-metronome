@@ -470,19 +470,20 @@ private struct BallTracker: View {
             let ballColor: Color = viewModel.isEccentric ? AppTheme.blood : AppTheme.parch
 
             ZStack {
+                // Labels
                 Text("UP")
                     .font(.system(size: 8, weight: .medium, design: .monospaced))
                     .tracking(4)
-                    .foregroundStyle(AppTheme.dust)
+                    .foregroundStyle(AppTheme.parch.opacity(0.5))
                     .position(x: cx, y: 10)
 
                 Text("DOWN")
                     .font(.system(size: 8, weight: .medium, design: .monospaced))
                     .tracking(4)
-                    .foregroundStyle(AppTheme.dust)
+                    .foregroundStyle(AppTheme.parch.opacity(0.5))
                     .position(x: cx, y: geo.size.height - 10)
 
-                // Zigzag track — one V per rep
+                // Dim base track — full zigzag in muted white so it's visible on red bg
                 Path { path in
                     path.move(to: CGPoint(x: trackLeft, y: trackTop))
                     for i in 0..<viewModel.totalReps {
@@ -491,14 +492,38 @@ private struct BallTracker: View {
                         path.addLine(to: CGPoint(x: x + segW,     y: trackTop))
                     }
                 }
-                .stroke(AppTheme.rim.opacity(0.7),
-                        style: StrokeStyle(lineWidth: 2, lineCap: .round, lineJoin: .round))
+                .stroke(AppTheme.parch.opacity(0.18),
+                        style: StrokeStyle(lineWidth: 2.5, lineCap: .round, lineJoin: .round))
 
-                // Ball
+                // Glowing trail — completed path so far
+                Path { path in
+                    // Fully completed reps
+                    for i in 0..<(viewModel.currentRep - 1) {
+                        let x = trackLeft + CGFloat(i) * segW
+                        path.move(to: CGPoint(x: x,            y: trackTop))
+                        path.addLine(to: CGPoint(x: x + segW / 2, y: trackBottom))
+                        path.addLine(to: CGPoint(x: x + segW,     y: trackTop))
+                    }
+                    // Current partial rep
+                    let rx = trackLeft + repIdx * segW
+                    if viewModel.isEccentric {
+                        path.move(to: CGPoint(x: rx, y: trackTop))
+                        path.addLine(to: CGPoint(x: ballX, y: ballY))
+                    } else {
+                        path.move(to: CGPoint(x: rx, y: trackTop))
+                        path.addLine(to: CGPoint(x: rx + segW / 2, y: trackBottom))
+                        path.addLine(to: CGPoint(x: ballX, y: ballY))
+                    }
+                }
+                .stroke(AppTheme.parch.opacity(0.6),
+                        style: StrokeStyle(lineWidth: 2.5, lineCap: .round, lineJoin: .round))
+
+                // Ball with strong glow
                 Circle()
                     .fill(ballColor)
                     .frame(width: ballSize, height: ballSize)
-                    .shadow(color: ballColor.opacity(0.9), radius: 16)
+                    .shadow(color: ballColor, radius: 10)
+                    .shadow(color: ballColor.opacity(0.6), radius: 24)
                     .position(x: ballX, y: ballY)
                     .animation(.linear(duration: 0.1), value: viewModel.phaseProgress)
                     .animation(.easeInOut(duration: 0.25), value: viewModel.isEccentric)
