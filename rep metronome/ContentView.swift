@@ -723,7 +723,7 @@ private struct LogScreen: View {
                         Text(viewModel.isLastSet ? "SKIP" : "SKIP → REST")
                             .font(.system(size: 14, weight: .medium, design: .monospaced))
                             .tracking(3)
-                            .foregroundStyle(AppTheme.dust)
+                            .foregroundStyle(AppTheme.fog)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 13)
                             .background(AppTheme.panel)
@@ -758,9 +758,9 @@ private struct ExerciseModal: View {
                 Button("CLOSE ✕") {
                     viewModel.showExerciseModal = false
                 }
-                .font(.system(size: 10, weight: .medium, design: .monospaced))
+                .font(.system(size: 11, weight: .semibold, design: .monospaced))
                 .tracking(2)
-                .foregroundStyle(AppTheme.dust)
+                .foregroundStyle(AppTheme.fog)
                 .padding(.horizontal, 12)
                 .padding(.vertical, 6)
                 .overlay(
@@ -781,9 +781,9 @@ private struct ExerciseModal: View {
                 VStack(alignment: .leading, spacing: 6) {
                     ForEach(viewModel.exerciseSections) { section in
                         Text(section.title)
-                            .font(.system(size: 8, weight: .medium, design: .monospaced))
+                            .font(.system(size: 11, weight: .semibold, design: .monospaced))
                             .tracking(5)
-                            .foregroundStyle(AppTheme.blood)
+                            .foregroundStyle(AppTheme.rose)
                             .padding(.top, 14)
                             .padding(.bottom, 6)
                             .frame(maxWidth: .infinity, alignment: .leading)
@@ -805,17 +805,17 @@ private struct ExerciseModal: View {
                                             .foregroundStyle(AppTheme.parch)
 
                                         Text(exercise.detail)
-                                            .font(.system(size: 9, weight: .medium, design: .monospaced))
+                                            .font(.system(size: 10, weight: .medium, design: .monospaced))
                                             .tracking(2)
-                                            .foregroundStyle(AppTheme.dust)
+                                            .foregroundStyle(AppTheme.fog)
                                     }
 
                                     Spacer()
 
                                     Text("\(exercise.eccentric)s / \(exercise.concentric)s")
-                                        .font(.system(size: 9, weight: .medium, design: .monospaced))
+                                        .font(.system(size: 10, weight: .semibold, design: .monospaced))
                                         .tracking(2)
-                                        .foregroundStyle(AppTheme.dust)
+                                        .foregroundStyle(AppTheme.fog)
                                         .padding(.horizontal, 8)
                                         .padding(.vertical, 3)
                                         .overlay(
