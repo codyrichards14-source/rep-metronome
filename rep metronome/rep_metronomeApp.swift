@@ -13,6 +13,6 @@ struct rep_metronomeApp: App {
         WindowGroup {
             ContentView()
         }
-        .supportedInterfaceOrientations([.portrait, .landscapeLeft, .landscapeRight])
+        .supportedInterfaceOrientations(.allButUpsideDown)
     }
 }
