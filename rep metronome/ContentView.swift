@@ -483,65 +483,11 @@ private struct LogScreen: View {
                     .frame(minHeight: 14, alignment: .leading)
                     .padding(.bottom, 20)
 
-                LogField(label: "Exercise") {
-                    TextField("", text: $viewModel.logExercise)
-                        .textInputAutocapitalization(.characters)
-                        .autocorrectionDisabled()
-                        .keyboardType(.alphabet)
-                        .font(.system(size: 20, weight: .bold, design: .rounded))
-                        .tracking(3)
-                        .foregroundStyle(AppTheme.parch)
-                }
-
-                VStack(alignment: .leading, spacing: 6) {
-                    Text("Weight")
-                        .font(.system(size: 9, weight: .medium, design: .monospaced))
-                        .tracking(4)
-                        .foregroundStyle(AppTheme.dust)
-                        .textCase(.uppercase)
-
-                    HStack(spacing: 8) {
-                        NumberCell(title: "", text: $viewModel.logWeightText, alignLeading: true)
-
-                        Picker("Unit", selection: $viewModel.logUnit) {
-                            Text("KG").tag("kg")
-                            Text("LBS").tag("lbs")
-                        }
-                        .pickerStyle(.menu)
-                        .tint(AppTheme.parch)
-                        .frame(minWidth: 72)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 14)
-                        .background(AppTheme.panel)
-                        .clipShape(RoundedRectangle(cornerRadius: 8))
-                        .overlay(RoundedRectangle(cornerRadius: 8).stroke(AppTheme.rim, lineWidth: 1))
-                    }
-
-                    Text(viewModel.weightHint)
-                        .font(.system(size: 9, weight: .medium, design: .monospaced))
-                        .tracking(2)
-                        .foregroundStyle(AppTheme.blood)
-                        .frame(minHeight: 14, alignment: .leading)
-                }
-                .padding(.bottom, 24)
-
-                Text(viewModel.tutText)
-                    .font(.system(size: 18, weight: .bold, design: .rounded))
-                    .tracking(3)
-                    .foregroundStyle(AppTheme.fog)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 12)
-                    .background(AppTheme.panel)
-                    .clipShape(RoundedRectangle(cornerRadius: 8))
-                    .overlay(RoundedRectangle(cornerRadius: 8).stroke(AppTheme.rim, lineWidth: 1))
-                    .padding(.bottom, 24)
-
                 // Primary action — filled
                 Button {
                     viewModel.logAndContinue()
                 } label: {
-                    Text(viewModel.isLastSet ? "LOG SET" : "LOG + REST")
+                    Text(viewModel.isLastSet ? "DONE" : "REST")
                         .font(.system(size: 18, weight: .bold, design: .rounded))
                         .tracking(4)
                         .foregroundStyle(AppTheme.parch)
@@ -558,7 +504,7 @@ private struct LogScreen: View {
                     Button {
                         viewModel.logAndFinish()
                     } label: {
-                        Text("LOG + DONE")
+                        Text("FINISH")
                             .font(.system(size: 14, weight: .bold, design: .rounded))
                             .tracking(3)
                             .foregroundStyle(AppTheme.fog)
@@ -847,29 +793,6 @@ private struct StatCell: View {
     }
 }
 
-private struct LogField<Content: View>: View {
-    let label: String
-    @ViewBuilder let content: Content
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text(label)
-                .font(.system(size: 9, weight: .medium, design: .monospaced))
-                .tracking(4)
-                .foregroundStyle(AppTheme.dust)
-                .textCase(.uppercase)
-
-            content
-                .padding(.horizontal, 16)
-                .padding(.vertical, 13)
-                .background(AppTheme.panel)
-                .clipShape(RoundedRectangle(cornerRadius: 8))
-                .overlay(RoundedRectangle(cornerRadius: 8).stroke(AppTheme.rim, lineWidth: 1))
-        }
-        .padding(.bottom, 16)
-    }
-}
-
 private struct BarbellGlyph: View {
     var body: some View {
         GeometryReader { geometry in
@@ -951,9 +874,6 @@ private final class RepMetroViewModel: NSObject, ObservableObject {
     @Published var restTotal = 90
 
     @Published var rpe: Int?
-    @Published var logExercise = ""
-    @Published var logWeightText = ""
-    @Published var logUnit = "kg"
 
     let exerciseSections = ExerciseSection.library
 
@@ -969,7 +889,6 @@ private final class RepMetroViewModel: NSObject, ObservableObject {
     private var phaseTimer: Timer?
     private var restTimer: Timer?
     private var splashTask: Task<Void, Never>?
-    private let storage = WorkoutLogStore()
     private var hasStartedSplash = false
 
     override init() {
@@ -1015,26 +934,6 @@ private final class RepMetroViewModel: NSObject, ObservableObject {
         return Self.rpeDescriptions[rpe] ?? ""
     }
 
-    var weightHint: String {
-        let name = normalizedExerciseName
-        guard !name.isEmpty,
-              let last = storage.logs.first(where: { $0.exercise == name && $0.weight > 0 })
-        else { return "" }
-
-        let weightText = last.weight.cleanNumber
-        return "LAST SESSION: \(weightText)\(last.unit.uppercased()) × \(last.reps) REPS"
-    }
-
-    var tutText: String {
-        let tut = totalReps * (eccentricSeconds + concentricSeconds)
-        let weight = Double(logWeightText) ?? 0
-        if weight > 0 {
-            let score = (weight * Double(tut) / 60.0 * 10).rounded() / 10
-            return "\(tut)S TIME UNDER TENSION · \(score.cleanNumber) \(logUnit.uppercased())·MIN"
-        }
-        return "\(tut)S TIME UNDER TENSION"
-    }
-
     var restProgress: Double {
         guard restTotal > 0 else { return 0 }
         return Double(restRemaining) / Double(restTotal)
@@ -1044,7 +943,6 @@ private final class RepMetroViewModel: NSObject, ObservableObject {
         selectedExercise = exercise
         eccentricText = "\(exercise.eccentric)"
         concentricText = "\(exercise.concentric)"
-        logExercise = exercise.name
         showExerciseModal = false
     }
 
@@ -1090,7 +988,6 @@ private final class RepMetroViewModel: NSObject, ObservableObject {
     }
 
     func logAndContinue() {
-        saveLog()
         if isLastSet {
             move(to: .setup)
         } else {
@@ -1099,7 +996,6 @@ private final class RepMetroViewModel: NSObject, ObservableObject {
     }
 
     func logAndFinish() {
-        saveLog()
         move(to: .setup)
     }
 
@@ -1164,10 +1060,6 @@ private final class RepMetroViewModel: NSObject, ObservableObject {
         speak(message)
 
         rpe = nil
-        logWeightText = ""
-        if let selectedExercise {
-            logExercise = selectedExercise.name
-        }
         move(to: .log)
     }
 
@@ -1200,25 +1092,6 @@ private final class RepMetroViewModel: NSObject, ObservableObject {
                 self.skipRest()
             }
         }
-    }
-
-    private func saveLog() {
-        let entry = WorkoutLogEntry(
-            date: Date(),
-            exercise: normalizedExerciseName.isEmpty ? "SET" : normalizedExerciseName,
-            reps: totalReps,
-            eccentric: eccentricSeconds,
-            concentric: concentricSeconds,
-            weight: Double(logWeightText) ?? 0,
-            unit: logUnit,
-            tut: totalReps * (eccentricSeconds + concentricSeconds),
-            rpe: rpe
-        )
-        storage.save(entry)
-    }
-
-    private var normalizedExerciseName: String {
-        logExercise.trimmingCharacters(in: .whitespacesAndNewlines).uppercased()
     }
 
     private func move(to screen: Screen) {
@@ -1398,65 +1271,9 @@ private struct ExercisePreset: Identifiable {
     let detail: String
 }
 
-private struct WorkoutLogEntry: Codable, Identifiable {
-    let id: UUID
-    let date: Date
-    let exercise: String
-    let reps: Int
-    let eccentric: Int
-    let concentric: Int
-    let weight: Double
-    let unit: String
-    let tut: Int
-    let rpe: Int?
-
-    init(date: Date, exercise: String, reps: Int, eccentric: Int, concentric: Int, weight: Double, unit: String, tut: Int, rpe: Int?) {
-        id = UUID()
-        self.date = date
-        self.exercise = exercise
-        self.reps = reps
-        self.eccentric = eccentric
-        self.concentric = concentric
-        self.weight = weight
-        self.unit = unit
-        self.tut = tut
-        self.rpe = rpe
-    }
-}
-
-private struct WorkoutLogStore {
-    private let key = "rm3_logs"
-
-    var logs: [WorkoutLogEntry] {
-        guard let data = UserDefaults.standard.data(forKey: key),
-              let logs = try? JSONDecoder().decode([WorkoutLogEntry].self, from: data)
-        else {
-            return []
-        }
-        return logs.sorted { $0.date > $1.date }
-    }
-
-    func save(_ entry: WorkoutLogEntry) {
-        var updated = logs
-        updated.insert(entry, at: 0)
-        if let data = try? JSONEncoder().encode(updated) {
-            UserDefaults.standard.set(data, forKey: key)
-        }
-    }
-}
-
 private extension String {
     var filteredDigits: String {
         filter { $0.isNumber }
-    }
-}
-
-private extension Double {
-    var cleanNumber: String {
-        if truncatingRemainder(dividingBy: 1) == 0 {
-            return String(Int(self))
-        }
-        return String(format: "%.1f", self)
     }
 }
 
