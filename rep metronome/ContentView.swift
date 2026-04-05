@@ -224,40 +224,41 @@ private struct ActiveScreen: View {
     @ObservedObject var viewModel: RepMetroViewModel
 
     var body: some View {
-        ZStack {
-            Color(hex: 0x3D0008)
+        GeometryReader { geo in
+            ZStack {
+                Color(hex: 0x3D0008)
+                    .ignoresSafeArea()
+
+                RadialGradient(
+                    colors: viewModel.isEccentric
+                        ? [AppTheme.blood.opacity(0.55), .clear]
+                        : [AppTheme.parch.opacity(0.10), .clear],
+                    center: viewModel.isEccentric ? .center : .top,
+                    startRadius: 0,
+                    endRadius: 360
+                )
                 .ignoresSafeArea()
 
-            RadialGradient(
-                colors: viewModel.isEccentric
-                    ? [AppTheme.blood.opacity(0.55), .clear]
-                    : [AppTheme.parch.opacity(0.10), .clear],
-                center: viewModel.isEccentric ? .center : .top,
-                startRadius: 0,
-                endRadius: 360
-            )
-            .ignoresSafeArea()
+                if geo.size.width > geo.size.height {
+                    LandscapeActiveLayout(viewModel: viewModel)
+                } else {
+                    PortraitActiveLayout(viewModel: viewModel)
+                }
+            }
+        }
+        .ignoresSafeArea()
+    }
+}
 
-            VStack(spacing: 0) {
-                HStack {
-                    Text("SET \(viewModel.currentSet) · \(viewModel.totalSets)")
-                        .font(.system(size: 9, weight: .medium, design: .monospaced))
-                        .tracking(4)
-                        .foregroundStyle(AppTheme.dust)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 5)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 8)
-                                .stroke(AppTheme.rim, lineWidth: 1)
-                        )
+private struct PortraitActiveLayout: View {
+    @ObservedObject var viewModel: RepMetroViewModel
 
-                    Spacer()
-
-                    Button("STOP") {
-                        viewModel.stopWorkout()
-                    }
-                    .font(.system(size: 10, weight: .medium, design: .monospaced))
-                    .tracking(2)
+    var body: some View {
+        VStack(spacing: 0) {
+            HStack {
+                Text("SET \(viewModel.currentSet) · \(viewModel.totalSets)")
+                    .font(.system(size: 9, weight: .medium, design: .monospaced))
+                    .tracking(4)
                     .foregroundStyle(AppTheme.dust)
                     .padding(.horizontal, 12)
                     .padding(.vertical, 5)
@@ -265,46 +266,139 @@ private struct ActiveScreen: View {
                         RoundedRectangle(cornerRadius: 8)
                             .stroke(AppTheme.rim, lineWidth: 1)
                     )
-                }
-                .padding(.horizontal, 24)
-                .padding(.top, 36)
-
-                TickRow(total: viewModel.totalReps, current: viewModel.currentRep)
-                    .padding(.top, 20)
-                    .padding(.horizontal, 24)
 
                 Spacer()
 
-                VStack(spacing: 0) {
+                Button("STOP") {
+                    viewModel.stopWorkout()
+                }
+                .font(.system(size: 10, weight: .medium, design: .monospaced))
+                .tracking(2)
+                .foregroundStyle(AppTheme.dust)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 5)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 8)
+                        .stroke(AppTheme.rim, lineWidth: 1)
+                )
+            }
+            .padding(.horizontal, 24)
+            .padding(.top, 36)
+
+            TickRow(total: viewModel.totalReps, current: viewModel.currentRep)
+                .padding(.top, 20)
+                .padding(.horizontal, 24)
+
+            Spacer()
+
+            VStack(spacing: 0) {
+                Text("\(viewModel.currentRep)")
+                    .font(.system(size: 132, weight: .bold, design: .rounded))
+                    .foregroundStyle(AppTheme.parch)
+                    .shadow(color: AppTheme.parch.opacity(0.15), radius: 30)
+
+                Text("OF \(viewModel.totalReps) REPS")
+                    .font(.system(size: 9, weight: .medium, design: .monospaced))
+                    .tracking(6)
+                    .foregroundStyle(AppTheme.dust)
+                    .padding(.top, -4)
+                    .padding(.bottom, 28)
+
+                Text(viewModel.phaseTitle)
+                    .font(.system(size: 84, weight: .bold, design: .rounded))
+                    .tracking(12)
+                    .foregroundStyle(viewModel.isEccentric ? AppTheme.parch : AppTheme.rose)
+                    .shadow(color: (viewModel.isEccentric ? AppTheme.parch : AppTheme.rose).opacity(0.25), radius: 24)
+                    .animation(.easeInOut(duration: 0.25), value: viewModel.isEccentric)
+
+                Text(viewModel.phaseSubtitle)
+                    .font(.system(size: 9, weight: .medium, design: .monospaced))
+                    .tracking(5)
+                    .foregroundStyle(AppTheme.dust)
+                    .padding(.top, 10)
+
+                ArcTimerView(progress: viewModel.phaseProgress,
+                             remainingText: viewModel.phaseRemainingText,
+                             strokeColor: viewModel.isEccentric ? AppTheme.blood : AppTheme.parch)
+                    .padding(.top, 28)
+            }
+
+            Spacer()
+
+            Button {
+                viewModel.togglePause()
+            } label: {
+                Text(viewModel.isPaused ? "RESUME" : "PAUSE")
+                    .font(.system(size: 18, weight: .bold, design: .rounded))
+                    .tracking(5)
+                    .foregroundStyle(viewModel.isPaused ? AppTheme.parch : AppTheme.fog)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 16)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 8)
+                            .stroke(viewModel.isPaused ? AppTheme.blood : AppTheme.rim, lineWidth: 1)
+                    )
+                    .background(viewModel.isPaused ? AppTheme.panel.opacity(0.18) : .clear)
+            }
+            .buttonStyle(.plain)
+            .padding(.horizontal, 24)
+            .padding(.bottom, 40)
+        }
+    }
+}
+
+private struct LandscapeActiveLayout: View {
+    @ObservedObject var viewModel: RepMetroViewModel
+
+    var body: some View {
+        HStack(spacing: 0) {
+            // Left: stats + controls
+            VStack(alignment: .leading, spacing: 0) {
+                HStack {
+                    Text("SET \(viewModel.currentSet) · \(viewModel.totalSets)")
+                        .font(.system(size: 9, weight: .medium, design: .monospaced))
+                        .tracking(4)
+                        .foregroundStyle(AppTheme.dust)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 4)
+                        .overlay(RoundedRectangle(cornerRadius: 8).stroke(AppTheme.rim, lineWidth: 1))
+
+                    Spacer()
+
+                    Button("STOP") { viewModel.stopWorkout() }
+                        .font(.system(size: 10, weight: .medium, design: .monospaced))
+                        .tracking(2)
+                        .foregroundStyle(AppTheme.dust)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 4)
+                        .overlay(RoundedRectangle(cornerRadius: 8).stroke(AppTheme.rim, lineWidth: 1))
+                }
+                .padding(.top, 16)
+
+                Spacer()
+
+                VStack(alignment: .leading, spacing: 2) {
                     Text("\(viewModel.currentRep)")
-                        .font(.system(size: 132, weight: .bold, design: .rounded))
+                        .font(.system(size: 72, weight: .bold, design: .rounded))
                         .foregroundStyle(AppTheme.parch)
-                        .shadow(color: AppTheme.parch.opacity(0.15), radius: 30)
 
                     Text("OF \(viewModel.totalReps) REPS")
                         .font(.system(size: 9, weight: .medium, design: .monospaced))
-                        .tracking(6)
+                        .tracking(5)
                         .foregroundStyle(AppTheme.dust)
-                        .padding(.top, -4)
-                        .padding(.bottom, 28)
+                        .padding(.bottom, 10)
 
                     Text(viewModel.phaseTitle)
-                        .font(.system(size: 84, weight: .bold, design: .rounded))
-                        .tracking(12)
+                        .font(.system(size: 44, weight: .bold, design: .rounded))
+                        .tracking(8)
                         .foregroundStyle(viewModel.isEccentric ? AppTheme.parch : AppTheme.rose)
-                        .shadow(color: (viewModel.isEccentric ? AppTheme.parch : AppTheme.rose).opacity(0.25), radius: 24)
                         .animation(.easeInOut(duration: 0.25), value: viewModel.isEccentric)
 
                     Text(viewModel.phaseSubtitle)
-                        .font(.system(size: 9, weight: .medium, design: .monospaced))
-                        .tracking(5)
+                        .font(.system(size: 8, weight: .medium, design: .monospaced))
+                        .tracking(3)
                         .foregroundStyle(AppTheme.dust)
-                        .padding(.top, 10)
-
-                    ArcTimerView(progress: viewModel.phaseProgress,
-                                 remainingText: viewModel.phaseRemainingText,
-                                 strokeColor: viewModel.isEccentric ? AppTheme.blood : AppTheme.parch)
-                        .padding(.top, 28)
+                        .padding(.top, 4)
                 }
 
                 Spacer()
@@ -313,11 +407,11 @@ private struct ActiveScreen: View {
                     viewModel.togglePause()
                 } label: {
                     Text(viewModel.isPaused ? "RESUME" : "PAUSE")
-                        .font(.system(size: 18, weight: .bold, design: .rounded))
+                        .font(.system(size: 14, weight: .bold, design: .rounded))
                         .tracking(5)
                         .foregroundStyle(viewModel.isPaused ? AppTheme.parch : AppTheme.fog)
                         .frame(maxWidth: .infinity)
-                        .padding(.vertical, 16)
+                        .padding(.vertical, 12)
                         .overlay(
                             RoundedRectangle(cornerRadius: 8)
                                 .stroke(viewModel.isPaused ? AppTheme.blood : AppTheme.rim, lineWidth: 1)
@@ -325,8 +419,73 @@ private struct ActiveScreen: View {
                         .background(viewModel.isPaused ? AppTheme.panel.opacity(0.18) : .clear)
                 }
                 .buttonStyle(.plain)
-                .padding(.horizontal, 24)
-                .padding(.bottom, 40)
+                .padding(.bottom, 16)
+            }
+            .padding(.horizontal, 20)
+            .frame(maxWidth: .infinity)
+
+            Rectangle()
+                .fill(AppTheme.rim)
+                .frame(width: 1)
+                .padding(.vertical, 16)
+
+            // Right: ball tracker
+            BallTracker(viewModel: viewModel)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 8)
+        }
+    }
+}
+
+private struct BallTracker: View {
+    @ObservedObject var viewModel: RepMetroViewModel
+    private let ballSize: CGFloat = 32
+
+    var body: some View {
+        GeometryReader { geo in
+            let topPad: CGFloat = 32
+            let botPad: CGFloat = 32
+            let cx = geo.size.width / 2
+            let trackTopY = topPad + ballSize / 2
+            let trackBottomY = geo.size.height - botPad - ballSize / 2
+            let usable = max(trackBottomY - trackTopY, 0)
+
+            let normalizedY: Double = viewModel.isEccentric
+                ? viewModel.phaseProgress
+                : (1 - viewModel.phaseProgress)
+
+            let ballCenterY = trackTopY + normalizedY * usable
+            let ballColor: Color = viewModel.isEccentric ? AppTheme.blood : AppTheme.parch
+
+            ZStack {
+                // Labels
+                Text("UP")
+                    .font(.system(size: 9, weight: .medium, design: .monospaced))
+                    .tracking(4)
+                    .foregroundStyle(AppTheme.dust)
+                    .position(x: cx, y: 14)
+
+                Text("DOWN")
+                    .font(.system(size: 9, weight: .medium, design: .monospaced))
+                    .tracking(4)
+                    .foregroundStyle(AppTheme.dust)
+                    .position(x: cx, y: geo.size.height - 14)
+
+                // Track
+                Path { path in
+                    path.move(to: CGPoint(x: cx, y: trackTopY))
+                    path.addLine(to: CGPoint(x: cx, y: trackBottomY))
+                }
+                .stroke(AppTheme.rim.opacity(0.8), style: StrokeStyle(lineWidth: 3, lineCap: .round))
+
+                // Ball
+                Circle()
+                    .fill(ballColor)
+                    .frame(width: ballSize, height: ballSize)
+                    .shadow(color: ballColor.opacity(0.9), radius: 18)
+                    .position(x: cx, y: ballCenterY)
+                    .animation(.linear(duration: 0.1), value: viewModel.phaseProgress)
+                    .animation(.easeInOut(duration: 0.25), value: viewModel.isEccentric)
             }
         }
     }
