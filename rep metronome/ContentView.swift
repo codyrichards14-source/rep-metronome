@@ -353,7 +353,7 @@ private struct LandscapeActiveLayout: View {
     var body: some View {
         HStack(spacing: 0) {
             // Left: stats + controls
-            VStack(alignment: .leading, spacing: 0) {
+            VStack(spacing: 0) {
                 HStack {
                     Text("SET \(viewModel.currentSet) · \(viewModel.totalSets)")
                         .font(.system(size: 9, weight: .medium, design: .monospaced))
@@ -373,32 +373,33 @@ private struct LandscapeActiveLayout: View {
                         .padding(.vertical, 4)
                         .overlay(RoundedRectangle(cornerRadius: 8).stroke(AppTheme.rim, lineWidth: 1))
                 }
-                .padding(.top, 16)
+                .padding(.top, 12)
 
                 Spacer()
 
-                VStack(alignment: .leading, spacing: 2) {
+                VStack(spacing: 2) {
                     Text("\(viewModel.currentRep)")
-                        .font(.system(size: 72, weight: .bold, design: .rounded))
+                        .font(.system(size: 56, weight: .bold, design: .rounded))
                         .foregroundStyle(AppTheme.parch)
 
                     Text("OF \(viewModel.totalReps) REPS")
-                        .font(.system(size: 9, weight: .medium, design: .monospaced))
-                        .tracking(5)
+                        .font(.system(size: 8, weight: .medium, design: .monospaced))
+                        .tracking(4)
                         .foregroundStyle(AppTheme.dust)
-                        .padding(.bottom, 10)
+                        .padding(.bottom, 8)
 
                     Text(viewModel.phaseTitle)
-                        .font(.system(size: 44, weight: .bold, design: .rounded))
-                        .tracking(8)
+                        .font(.system(size: 36, weight: .bold, design: .rounded))
+                        .tracking(6)
                         .foregroundStyle(viewModel.isEccentric ? AppTheme.parch : AppTheme.rose)
                         .animation(.easeInOut(duration: 0.25), value: viewModel.isEccentric)
 
                     Text(viewModel.phaseSubtitle)
-                        .font(.system(size: 8, weight: .medium, design: .monospaced))
-                        .tracking(3)
+                        .font(.system(size: 7, weight: .medium, design: .monospaced))
+                        .tracking(2)
                         .foregroundStyle(AppTheme.dust)
-                        .padding(.top, 4)
+                        .padding(.top, 3)
+                        .multilineTextAlignment(.center)
                 }
 
                 Spacer()
@@ -407,11 +408,11 @@ private struct LandscapeActiveLayout: View {
                     viewModel.togglePause()
                 } label: {
                     Text(viewModel.isPaused ? "RESUME" : "PAUSE")
-                        .font(.system(size: 14, weight: .bold, design: .rounded))
-                        .tracking(5)
+                        .font(.system(size: 13, weight: .bold, design: .rounded))
+                        .tracking(4)
                         .foregroundStyle(viewModel.isPaused ? AppTheme.parch : AppTheme.fog)
                         .frame(maxWidth: .infinity)
-                        .padding(.vertical, 12)
+                        .padding(.vertical, 10)
                         .overlay(
                             RoundedRectangle(cornerRadius: 8)
                                 .stroke(viewModel.isPaused ? AppTheme.blood : AppTheme.rim, lineWidth: 1)
@@ -419,7 +420,7 @@ private struct LandscapeActiveLayout: View {
                         .background(viewModel.isPaused ? AppTheme.panel.opacity(0.18) : .clear)
                 }
                 .buttonStyle(.plain)
-                .padding(.bottom, 16)
+                .padding(.bottom, 12)
             }
             .padding(.horizontal, 20)
             .frame(maxWidth: .infinity)
