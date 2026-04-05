@@ -423,14 +423,14 @@ private struct LandscapeActiveLayout: View {
                 .padding(.bottom, 12)
             }
             .padding(.horizontal, 20)
-            .frame(maxWidth: .infinity)
+            .frame(width: 200)
 
             Rectangle()
                 .fill(AppTheme.rim)
                 .frame(width: 1)
                 .padding(.vertical, 16)
 
-            // Right: ball tracker
+            // Right: ball tracker — takes remaining width
             BallTracker(viewModel: viewModel)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 8)
