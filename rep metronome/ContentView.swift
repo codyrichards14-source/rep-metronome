@@ -1094,7 +1094,7 @@ private final class RepMetroViewModel: NSObject, ObservableObject {
 
     override init() {
         super.init()
-        try? AVAudioSession.sharedInstance().setCategory(.playback, mode: .default, options: [.duckOthers])
+        try? AVAudioSession.sharedInstance().setCategory(.playback, mode: .default, options: [.mixWithOthers])
         try? AVAudioSession.sharedInstance().setActive(true)
     }
 
