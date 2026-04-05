@@ -62,11 +62,11 @@ struct ContentView: View {
 private enum AppTheme {
     static let ink = Color(hex: 0x0A0000)
     static let deep = Color(hex: 0x130000)
-    static let panel = Color(hex: 0x1A0002)
-    static let card = Color(hex: 0x210003)
-    static let rim = Color(hex: 0x3D0008)
-    static let dust = Color(hex: 0x7A3035)
-    static let fog = Color(hex: 0xB08088)
+    static let panel = Color(hex: 0x260006)
+    static let card = Color(hex: 0x2E0008)
+    static let rim = Color(hex: 0x6A0014)
+    static let dust = Color(hex: 0xAA7880)
+    static let fog = Color(hex: 0xCFB0B8)
     static let parch = Color(hex: 0xF2E8DF)
     static let blood = Color(hex: 0xC80010)
     static let rose = Color(hex: 0xE8001A)
@@ -134,9 +134,9 @@ private struct SetupScreen: View {
                     }
 
                     Text("TEMPO TRAINING · GUIDED REPS")
-                        .font(.system(size: 9, weight: .medium, design: .monospaced))
+                        .font(.system(size: 10, weight: .medium, design: .monospaced))
                         .tracking(4)
-                        .foregroundStyle(AppTheme.dust)
+                        .foregroundStyle(AppTheme.fog)
                 }
                 .padding(.top, 48)
                 .padding(.bottom, 32)
@@ -166,9 +166,9 @@ private struct SetupScreen: View {
                                     .foregroundStyle(AppTheme.parch)
 
                                 Text(viewModel.selectedExercise?.detail ?? "Or set tempo manually")
-                                    .font(.system(size: 9, weight: .medium, design: .monospaced))
+                                    .font(.system(size: 10, weight: .medium, design: .monospaced))
                                     .tracking(2)
-                                    .foregroundStyle(AppTheme.dust)
+                                    .foregroundStyle(AppTheme.fog)
                             }
 
                             Spacer()
@@ -847,9 +847,9 @@ private struct FieldGroup<Content: View>: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
             Text(label)
-                .font(.system(size: 9, weight: .medium, design: .monospaced))
-                .tracking(4)
-                .foregroundStyle(AppTheme.dust)
+                .font(.system(size: 11, weight: .semibold, design: .monospaced))
+                .tracking(3)
+                .foregroundStyle(AppTheme.fog)
                 .textCase(.uppercase)
 
             content
@@ -872,9 +872,9 @@ private struct NumberCell: View {
 
             if !title.isEmpty {
                 Text(title.uppercased())
-                    .font(.system(size: 8, weight: .medium, design: .monospaced))
-                    .tracking(3)
-                    .foregroundStyle(AppTheme.dust)
+                    .font(.system(size: 10, weight: .semibold, design: .monospaced))
+                    .tracking(2)
+                    .foregroundStyle(AppTheme.fog)
             }
         }
         .padding(.horizontal, alignLeading ? 14 : 8)
@@ -898,9 +898,9 @@ private struct PhaseChip: View {
                 .foregroundStyle(AppTheme.parch)
 
             Text(subtitle.uppercased())
-                .font(.system(size: 8, weight: .medium, design: .monospaced))
+                .font(.system(size: 10, weight: .medium, design: .monospaced))
                 .tracking(2)
-                .foregroundStyle(AppTheme.dust)
+                .foregroundStyle(AppTheme.fog)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, 14)
