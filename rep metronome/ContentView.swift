@@ -60,16 +60,16 @@ struct ContentView: View {
 }
 
 private enum AppTheme {
-    static let ink = Color(hex: 0x0E0608)
-    static let deep = Color(hex: 0x180C0E)
-    static let panel = Color(hex: 0x1F1012)
-    static let card = Color(hex: 0x261416)
-    static let rim = Color(hex: 0x3D1C20)
-    static let dust = Color(hex: 0x7A4A50)
-    static let fog = Color(hex: 0xB08A8E)
+    static let ink = Color(hex: 0x0A0000)
+    static let deep = Color(hex: 0x130000)
+    static let panel = Color(hex: 0x1A0002)
+    static let card = Color(hex: 0x210003)
+    static let rim = Color(hex: 0x3D0008)
+    static let dust = Color(hex: 0x7A3035)
+    static let fog = Color(hex: 0xB08088)
     static let parch = Color(hex: 0xF2E8DF)
-    static let blood = Color(hex: 0x8B0021)
-    static let rose = Color(hex: 0xC41840)
+    static let blood = Color(hex: 0xC80010)
+    static let rose = Color(hex: 0xE8001A)
 }
 
 private struct SplashScreen: View {
