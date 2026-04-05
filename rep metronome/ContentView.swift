@@ -440,51 +440,66 @@ private struct LandscapeActiveLayout: View {
 
 private struct BallTracker: View {
     @ObservedObject var viewModel: RepMetroViewModel
-    private let ballSize: CGFloat = 32
+    private let ballSize: CGFloat = 28
 
     var body: some View {
         GeometryReader { geo in
-            let topPad: CGFloat = 32
-            let botPad: CGFloat = 32
+            let hPad: CGFloat = 20
+            let labelH: CGFloat = 20
+            let trackLeft = hPad
+            let trackRight = geo.size.width - hPad
+            let trackTop = labelH + 6
+            let trackBottom = geo.size.height - labelH - 6
+            let trackWidth = trackRight - trackLeft
+            let trackHeight = trackBottom - trackTop
+            let segW = trackWidth / CGFloat(max(viewModel.totalReps, 1))
             let cx = geo.size.width / 2
-            let trackTopY = topPad + ballSize / 2
-            let trackBottomY = geo.size.height - botPad - ballSize / 2
-            let usable = max(trackBottomY - trackTopY, 0)
 
-            let normalizedY: Double = viewModel.isEccentric
-                ? viewModel.phaseProgress
-                : (1 - viewModel.phaseProgress)
+            let repIdx = CGFloat(viewModel.currentRep - 1)
+            let prog = CGFloat(viewModel.phaseProgress)
 
-            let ballCenterY = trackTopY + normalizedY * usable
+            // Ball traces a zigzag: down-right during eccentric, up-right during concentric
+            let ballX: CGFloat = viewModel.isEccentric
+                ? trackLeft + repIdx * segW + prog * segW / 2
+                : trackLeft + repIdx * segW + segW / 2 + prog * segW / 2
+
+            let ballY: CGFloat = viewModel.isEccentric
+                ? trackTop + prog * trackHeight
+                : trackBottom - prog * trackHeight
+
             let ballColor: Color = viewModel.isEccentric ? AppTheme.blood : AppTheme.parch
 
             ZStack {
-                // Labels
                 Text("UP")
-                    .font(.system(size: 9, weight: .medium, design: .monospaced))
+                    .font(.system(size: 8, weight: .medium, design: .monospaced))
                     .tracking(4)
                     .foregroundStyle(AppTheme.dust)
-                    .position(x: cx, y: 14)
+                    .position(x: cx, y: 10)
 
                 Text("DOWN")
-                    .font(.system(size: 9, weight: .medium, design: .monospaced))
+                    .font(.system(size: 8, weight: .medium, design: .monospaced))
                     .tracking(4)
                     .foregroundStyle(AppTheme.dust)
-                    .position(x: cx, y: geo.size.height - 14)
+                    .position(x: cx, y: geo.size.height - 10)
 
-                // Track
+                // Zigzag track — one V per rep
                 Path { path in
-                    path.move(to: CGPoint(x: cx, y: trackTopY))
-                    path.addLine(to: CGPoint(x: cx, y: trackBottomY))
+                    path.move(to: CGPoint(x: trackLeft, y: trackTop))
+                    for i in 0..<viewModel.totalReps {
+                        let x = trackLeft + CGFloat(i) * segW
+                        path.addLine(to: CGPoint(x: x + segW / 2, y: trackBottom))
+                        path.addLine(to: CGPoint(x: x + segW,     y: trackTop))
+                    }
                 }
-                .stroke(AppTheme.rim.opacity(0.8), style: StrokeStyle(lineWidth: 3, lineCap: .round))
+                .stroke(AppTheme.rim.opacity(0.7),
+                        style: StrokeStyle(lineWidth: 2, lineCap: .round, lineJoin: .round))
 
                 // Ball
                 Circle()
                     .fill(ballColor)
                     .frame(width: ballSize, height: ballSize)
-                    .shadow(color: ballColor.opacity(0.9), radius: 18)
-                    .position(x: cx, y: ballCenterY)
+                    .shadow(color: ballColor.opacity(0.9), radius: 16)
+                    .position(x: ballX, y: ballY)
                     .animation(.linear(duration: 0.1), value: viewModel.phaseProgress)
                     .animation(.easeInOut(duration: 0.25), value: viewModel.isEccentric)
             }
