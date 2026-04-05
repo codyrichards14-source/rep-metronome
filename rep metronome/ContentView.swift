@@ -225,16 +225,16 @@ private struct ActiveScreen: View {
 
     var body: some View {
         ZStack {
-            AppTheme.deep
+            Color(hex: 0x3D0008)
                 .ignoresSafeArea()
 
             RadialGradient(
                 colors: viewModel.isEccentric
-                    ? [AppTheme.blood.opacity(0.22), .clear]
-                    : [AppTheme.parch.opacity(0.08), .clear],
+                    ? [AppTheme.blood.opacity(0.55), .clear]
+                    : [AppTheme.parch.opacity(0.10), .clear],
                 center: viewModel.isEccentric ? .center : .top,
                 startRadius: 0,
-                endRadius: 320
+                endRadius: 360
             )
             .ignoresSafeArea()
 
