@@ -257,9 +257,9 @@ private struct PortraitActiveLayout: View {
         VStack(spacing: 0) {
             HStack {
                 Text("SET \(viewModel.currentSet) · \(viewModel.totalSets)")
-                    .font(.system(size: 9, weight: .medium, design: .monospaced))
-                    .tracking(4)
-                    .foregroundStyle(AppTheme.dust)
+                    .font(.system(size: 11, weight: .semibold, design: .monospaced))
+                    .tracking(3)
+                    .foregroundStyle(AppTheme.fog)
                     .padding(.horizontal, 12)
                     .padding(.vertical, 5)
                     .overlay(
@@ -272,9 +272,9 @@ private struct PortraitActiveLayout: View {
                 Button("STOP") {
                     viewModel.stopWorkout()
                 }
-                .font(.system(size: 10, weight: .medium, design: .monospaced))
+                .font(.system(size: 11, weight: .semibold, design: .monospaced))
                 .tracking(2)
-                .foregroundStyle(AppTheme.dust)
+                .foregroundStyle(AppTheme.fog)
                 .padding(.horizontal, 12)
                 .padding(.vertical, 5)
                 .overlay(
@@ -298,9 +298,9 @@ private struct PortraitActiveLayout: View {
                     .shadow(color: AppTheme.parch.opacity(0.15), radius: 30)
 
                 Text("OF \(viewModel.totalReps) REPS")
-                    .font(.system(size: 9, weight: .medium, design: .monospaced))
-                    .tracking(6)
-                    .foregroundStyle(AppTheme.dust)
+                    .font(.system(size: 11, weight: .semibold, design: .monospaced))
+                    .tracking(5)
+                    .foregroundStyle(AppTheme.fog)
                     .padding(.top, -4)
                     .padding(.bottom, 28)
 
@@ -312,9 +312,9 @@ private struct PortraitActiveLayout: View {
                     .animation(.easeInOut(duration: 0.25), value: viewModel.isEccentric)
 
                 Text(viewModel.phaseSubtitle)
-                    .font(.system(size: 9, weight: .medium, design: .monospaced))
-                    .tracking(5)
-                    .foregroundStyle(AppTheme.dust)
+                    .font(.system(size: 11, weight: .medium, design: .monospaced))
+                    .tracking(4)
+                    .foregroundStyle(AppTheme.fog)
                     .padding(.top, 10)
 
                 ArcTimerView(progress: viewModel.phaseProgress,
@@ -356,9 +356,9 @@ private struct LandscapeActiveLayout: View {
             VStack(spacing: 0) {
                 HStack {
                     Text("SET \(viewModel.currentSet) · \(viewModel.totalSets)")
-                        .font(.system(size: 9, weight: .medium, design: .monospaced))
-                        .tracking(4)
-                        .foregroundStyle(AppTheme.dust)
+                        .font(.system(size: 11, weight: .semibold, design: .monospaced))
+                        .tracking(3)
+                        .foregroundStyle(AppTheme.fog)
                         .padding(.horizontal, 10)
                         .padding(.vertical, 4)
                         .overlay(RoundedRectangle(cornerRadius: 8).stroke(AppTheme.rim, lineWidth: 1))
@@ -366,9 +366,9 @@ private struct LandscapeActiveLayout: View {
                     Spacer()
 
                     Button("STOP") { viewModel.stopWorkout() }
-                        .font(.system(size: 10, weight: .medium, design: .monospaced))
+                        .font(.system(size: 11, weight: .semibold, design: .monospaced))
                         .tracking(2)
-                        .foregroundStyle(AppTheme.dust)
+                        .foregroundStyle(AppTheme.fog)
                         .padding(.horizontal, 10)
                         .padding(.vertical, 4)
                         .overlay(RoundedRectangle(cornerRadius: 8).stroke(AppTheme.rim, lineWidth: 1))
@@ -383,9 +383,9 @@ private struct LandscapeActiveLayout: View {
                         .foregroundStyle(AppTheme.parch)
 
                     Text("OF \(viewModel.totalReps) REPS")
-                        .font(.system(size: 8, weight: .medium, design: .monospaced))
+                        .font(.system(size: 10, weight: .semibold, design: .monospaced))
                         .tracking(4)
-                        .foregroundStyle(AppTheme.dust)
+                        .foregroundStyle(AppTheme.fog)
                         .padding(.bottom, 8)
 
                     Text(viewModel.phaseTitle)
@@ -395,9 +395,9 @@ private struct LandscapeActiveLayout: View {
                         .animation(.easeInOut(duration: 0.25), value: viewModel.isEccentric)
 
                     Text(viewModel.phaseSubtitle)
-                        .font(.system(size: 7, weight: .medium, design: .monospaced))
+                        .font(.system(size: 9, weight: .medium, design: .monospaced))
                         .tracking(2)
-                        .foregroundStyle(AppTheme.dust)
+                        .foregroundStyle(AppTheme.fog)
                         .padding(.top, 3)
                         .multilineTextAlignment(.center)
                 }
@@ -930,7 +930,7 @@ private struct TickRow: View {
     private func color(for index: Int) -> Color {
         if index < current { return AppTheme.blood }
         if index == current { return AppTheme.parch }
-        return AppTheme.rim
+        return AppTheme.dust
     }
 }
 
@@ -942,7 +942,7 @@ private struct ArcTimerView: View {
     var body: some View {
         ZStack {
             Circle()
-                .stroke(AppTheme.rim, lineWidth: 2)
+                .stroke(AppTheme.dust.opacity(0.4), lineWidth: 2)
                 .frame(width: 130, height: 130)
 
             Circle()
@@ -957,9 +957,9 @@ private struct ArcTimerView: View {
                     .foregroundStyle(AppTheme.parch)
 
                 Text("SEC")
-                    .font(.system(size: 8, weight: .medium, design: .monospaced))
+                    .font(.system(size: 10, weight: .semibold, design: .monospaced))
                     .tracking(4)
-                    .foregroundStyle(AppTheme.dust)
+                    .foregroundStyle(AppTheme.fog)
                     .padding(.top, -2)
             }
         }
@@ -977,9 +977,9 @@ private struct StatCell: View {
                 .foregroundStyle(AppTheme.parch)
 
             Text(label.uppercased())
-                .font(.system(size: 8, weight: .medium, design: .monospaced))
+                .font(.system(size: 10, weight: .semibold, design: .monospaced))
                 .tracking(3)
-                .foregroundStyle(AppTheme.dust)
+                .foregroundStyle(AppTheme.fog)
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 14)
