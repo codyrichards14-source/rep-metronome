@@ -452,26 +452,23 @@ private struct BallTracker: View {
             let trackTop = labelH + 6
             let trackBottom = geo.size.height - labelH - 6
             let trackWidth = trackRight - trackLeft
-            let trackHeight = trackBottom - trackTop
-            let segW = trackWidth / CGFloat(max(viewModel.totalReps, 1))
+            let centerY = (trackTop + trackBottom) / 2
+            let amplitude = (trackBottom - trackTop) / 2
             let cx = geo.size.width / 2
+            let n = max(viewModel.totalReps, 1)
+            let steps = n * 50
 
-            let repIdx = CGFloat(viewModel.currentRep - 1)
-            let prog = CGFloat(viewModel.phaseProgress)
-
-            // Ball traces a zigzag: down-right during eccentric, up-right during concentric
-            let ballX: CGFloat = viewModel.isEccentric
-                ? trackLeft + repIdx * segW + prog * segW / 2
-                : trackLeft + repIdx * segW + segW / 2 + prog * segW / 2
-
-            let ballY: CGFloat = viewModel.isEccentric
-                ? trackTop + prog * trackHeight
-                : trackBottom - prog * trackHeight
-
+            // Ball position along the sine wave
+            let repPhase = viewModel.isEccentric
+                ? viewModel.phaseProgress
+                : 1 + viewModel.phaseProgress
+            let tBall = (Double(viewModel.currentRep - 1) + repPhase / 2) / Double(n)
+            let ballX = trackLeft + CGFloat(tBall) * trackWidth
+            let ballY = centerY - amplitude * CGFloat(cos(tBall * Double(n) * 2 * .pi))
             let ballColor: Color = viewModel.isEccentric ? AppTheme.blood : AppTheme.parch
+            let trailSteps = Int(tBall * Double(steps))
 
             ZStack {
-                // Labels
                 Text("UP")
                     .font(.system(size: 8, weight: .medium, design: .monospaced))
                     .tracking(4)
@@ -484,40 +481,33 @@ private struct BallTracker: View {
                     .foregroundStyle(AppTheme.parch.opacity(0.5))
                     .position(x: cx, y: geo.size.height - 10)
 
-                // Dim base track — full zigzag in muted white so it's visible on red bg
+                // Dim base sine wave
                 Path { path in
-                    path.move(to: CGPoint(x: trackLeft, y: trackTop))
-                    for i in 0..<viewModel.totalReps {
-                        let x = trackLeft + CGFloat(i) * segW
-                        path.addLine(to: CGPoint(x: x + segW / 2, y: trackBottom))
-                        path.addLine(to: CGPoint(x: x + segW,     y: trackTop))
+                    for i in 0...steps {
+                        let t = Double(i) / Double(steps)
+                        let x = trackLeft + CGFloat(t) * trackWidth
+                        let y = centerY - amplitude * CGFloat(cos(t * Double(n) * 2 * .pi))
+                        if i == 0 { path.move(to: CGPoint(x: x, y: y)) }
+                        else      { path.addLine(to: CGPoint(x: x, y: y)) }
                     }
                 }
                 .stroke(AppTheme.parch.opacity(0.18),
                         style: StrokeStyle(lineWidth: 2.5, lineCap: .round, lineJoin: .round))
 
-                // Glowing trail — completed path so far
-                Path { path in
-                    // Fully completed reps
-                    for i in 0..<(viewModel.currentRep - 1) {
-                        let x = trackLeft + CGFloat(i) * segW
-                        path.move(to: CGPoint(x: x,            y: trackTop))
-                        path.addLine(to: CGPoint(x: x + segW / 2, y: trackBottom))
-                        path.addLine(to: CGPoint(x: x + segW,     y: trackTop))
+                // Glowing completed trail
+                if trailSteps > 0 {
+                    Path { path in
+                        for i in 0...trailSteps {
+                            let t = Double(i) / Double(steps)
+                            let x = trackLeft + CGFloat(t) * trackWidth
+                            let y = centerY - amplitude * CGFloat(cos(t * Double(n) * 2 * .pi))
+                            if i == 0 { path.move(to: CGPoint(x: x, y: y)) }
+                            else      { path.addLine(to: CGPoint(x: x, y: y)) }
+                        }
                     }
-                    // Current partial rep
-                    let rx = trackLeft + repIdx * segW
-                    if viewModel.isEccentric {
-                        path.move(to: CGPoint(x: rx, y: trackTop))
-                        path.addLine(to: CGPoint(x: ballX, y: ballY))
-                    } else {
-                        path.move(to: CGPoint(x: rx, y: trackTop))
-                        path.addLine(to: CGPoint(x: rx + segW / 2, y: trackBottom))
-                        path.addLine(to: CGPoint(x: ballX, y: ballY))
-                    }
+                    .stroke(AppTheme.parch.opacity(0.6),
+                            style: StrokeStyle(lineWidth: 2.5, lineCap: .round, lineJoin: .round))
                 }
-                .stroke(AppTheme.parch.opacity(0.6),
-                        style: StrokeStyle(lineWidth: 2.5, lineCap: .round, lineJoin: .round))
 
                 // Ball with strong glow
                 Circle()
