@@ -359,8 +359,8 @@ private struct LandscapeActiveLayout: View {
                         .font(.system(size: 11, weight: .semibold, design: .monospaced))
                         .tracking(3)
                         .foregroundStyle(AppTheme.fog)
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 4)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 6)
                         .overlay(RoundedRectangle(cornerRadius: 8).stroke(AppTheme.rim, lineWidth: 1))
 
                     Spacer()
@@ -369,27 +369,27 @@ private struct LandscapeActiveLayout: View {
                         .font(.system(size: 11, weight: .semibold, design: .monospaced))
                         .tracking(2)
                         .foregroundStyle(AppTheme.fog)
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 4)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 6)
                         .overlay(RoundedRectangle(cornerRadius: 8).stroke(AppTheme.rim, lineWidth: 1))
                 }
-                .padding(.top, 12)
+                .padding(.top, 16)
 
                 Spacer()
 
-                VStack(spacing: 2) {
+                VStack(spacing: 4) {
                     Text("\(viewModel.currentRep)")
-                        .font(.system(size: 56, weight: .bold, design: .rounded))
+                        .font(.system(size: 64, weight: .bold, design: .rounded))
                         .foregroundStyle(AppTheme.parch)
 
                     Text("OF \(viewModel.totalReps) REPS")
-                        .font(.system(size: 10, weight: .semibold, design: .monospaced))
+                        .font(.system(size: 11, weight: .semibold, design: .monospaced))
                         .tracking(4)
                         .foregroundStyle(AppTheme.fog)
-                        .padding(.bottom, 8)
+                        .padding(.bottom, 10)
 
                     Text(viewModel.phaseTitle)
-                        .font(.system(size: 36, weight: .bold, design: .rounded))
+                        .font(.system(size: 40, weight: .bold, design: .rounded))
                         .tracking(6)
                         .foregroundStyle(viewModel.isEccentric ? AppTheme.parch : AppTheme.rose)
                         .animation(.easeInOut(duration: 0.25), value: viewModel.isEccentric)
@@ -398,8 +398,9 @@ private struct LandscapeActiveLayout: View {
                         .font(.system(size: 9, weight: .medium, design: .monospaced))
                         .tracking(2)
                         .foregroundStyle(AppTheme.fog)
-                        .padding(.top, 3)
+                        .padding(.top, 4)
                         .multilineTextAlignment(.center)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
 
                 Spacer()
@@ -408,11 +409,11 @@ private struct LandscapeActiveLayout: View {
                     viewModel.togglePause()
                 } label: {
                     Text(viewModel.isPaused ? "RESUME" : "PAUSE")
-                        .font(.system(size: 13, weight: .bold, design: .rounded))
+                        .font(.system(size: 14, weight: .bold, design: .rounded))
                         .tracking(4)
                         .foregroundStyle(viewModel.isPaused ? AppTheme.parch : AppTheme.fog)
                         .frame(maxWidth: .infinity)
-                        .padding(.vertical, 10)
+                        .padding(.vertical, 12)
                         .overlay(
                             RoundedRectangle(cornerRadius: 8)
                                 .stroke(viewModel.isPaused ? AppTheme.blood : AppTheme.rim, lineWidth: 1)
@@ -420,20 +421,20 @@ private struct LandscapeActiveLayout: View {
                         .background(viewModel.isPaused ? AppTheme.panel.opacity(0.18) : .clear)
                 }
                 .buttonStyle(.plain)
-                .padding(.bottom, 12)
+                .padding(.bottom, 16)
             }
-            .padding(.horizontal, 20)
-            .frame(width: 200)
+            .padding(.horizontal, 24)
+            .frame(width: 240)
 
             Rectangle()
                 .fill(AppTheme.rim)
                 .frame(width: 1)
-                .padding(.vertical, 16)
+                .padding(.vertical, 20)
 
             // Right: ball tracker — takes remaining width
             BallTracker(viewModel: viewModel)
                 .frame(maxWidth: .infinity)
-                .padding(.vertical, 8)
+                .padding(.vertical, 12)
         }
     }
 }
