@@ -1156,7 +1156,8 @@ private final class RepMetroViewModel: NSObject, ObservableObject {
         move(to: .active)
         speak("Set 1. Let's go.", delay: 0.3)
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.6) {
-            self.startPhase()
+            self.speakRepComplete()
+            self.startPhase(speechDelay: 0.65)
         }
     }
 
@@ -1212,7 +1213,10 @@ private final class RepMetroViewModel: NSObject, ObservableObject {
         isEccentric = true
         isPaused = false
         move(to: .active)
-        startPhase()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.4) {
+            self.speakRepComplete()
+            self.startPhase(speechDelay: 0.65)
+        }
     }
 
     private func startPhase(speechDelay: Double = 0) {
@@ -1239,11 +1243,10 @@ private final class RepMetroViewModel: NSObject, ObservableObject {
             isEccentric = false
             startPhase()
         } else if currentRep >= totalReps {
-            speakRepComplete()
             finishSet()
         } else {
-            speakRepComplete()
             currentRep += 1
+            speakRepComplete()
             isEccentric = true
             startPhase(speechDelay: 0.65)
         }
