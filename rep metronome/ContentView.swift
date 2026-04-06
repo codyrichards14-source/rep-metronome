@@ -73,45 +73,92 @@ private enum AppTheme {
 }
 
 private struct SplashScreen: View {
-    @State private var animateLine = false
+    @State private var showGlow    = false
+    @State private var showIcon    = false
+    @State private var showTitle   = false
+    @State private var showSub     = false
+    @State private var expandLines = false
 
     var body: some View {
-        VStack(spacing: 0) {
-            ZStack {
-                Rectangle()
-                    .stroke(AppTheme.blood, lineWidth: 1)
-                    .frame(width: 88, height: 88)
+        ZStack {
+            // Radial background glow
+            RadialGradient(
+                colors: [AppTheme.blood.opacity(showGlow ? 0.35 : 0), .clear],
+                center: .center,
+                startRadius: 0,
+                endRadius: 320
+            )
+            .ignoresSafeArea()
+            .animation(.easeOut(duration: 1.4), value: showGlow)
 
-                Rectangle()
-                    .stroke(AppTheme.blood.opacity(0.3), lineWidth: 1)
-                    .frame(width: 78, height: 78)
+            VStack(spacing: 0) {
+                // Icon with concentric rings
+                ZStack {
+                    Circle()
+                        .stroke(AppTheme.blood.opacity(0.15), lineWidth: 1)
+                        .frame(width: 116, height: 116)
 
-                BarbellGlyph()
-                    .frame(width: 44, height: 44)
+                    Circle()
+                        .stroke(AppTheme.blood.opacity(0.35), lineWidth: 1)
+                        .frame(width: 96, height: 96)
+
+                    Circle()
+                        .fill(AppTheme.panel)
+                        .frame(width: 76, height: 76)
+                        .shadow(color: AppTheme.blood.opacity(0.5), radius: 16)
+
+                    BarbellGlyph()
+                        .frame(width: 40, height: 40)
+                }
+                .scaleEffect(showIcon ? 1.0 : 0.4)
+                .opacity(showIcon ? 1 : 0)
+                .animation(.spring(response: 0.55, dampingFraction: 0.65).delay(0.15), value: showIcon)
+                .padding(.bottom, 36)
+
+                // Title — two-tone like setup screen
+                HStack(spacing: 0) {
+                    Text("REP ")
+                        .font(.system(size: 52, weight: .bold, design: .rounded))
+                        .foregroundStyle(AppTheme.parch)
+                    Text("METRO")
+                        .font(.system(size: 52, weight: .bold, design: .rounded))
+                        .foregroundStyle(AppTheme.blood)
+                }
+                .opacity(showTitle ? 1 : 0)
+                .offset(y: showTitle ? 0 : 16)
+                .animation(.easeOut(duration: 0.55).delay(0.5), value: showTitle)
+
+                // Subtitle flanked by expanding lines
+                HStack(spacing: 0) {
+                    Rectangle()
+                        .fill(AppTheme.blood)
+                        .frame(width: expandLines ? 48 : 0, height: 1)
+                        .animation(.easeOut(duration: 0.7).delay(0.85), value: expandLines)
+
+                    Text("TEMPO TRAINING · GUIDED REPS")
+                        .font(.system(size: 9, weight: .medium, design: .monospaced))
+                        .tracking(4)
+                        .foregroundStyle(AppTheme.fog)
+                        .opacity(showSub ? 1 : 0)
+                        .animation(.easeOut(duration: 0.5).delay(0.75), value: showSub)
+                        .padding(.horizontal, 10)
+
+                    Rectangle()
+                        .fill(AppTheme.blood)
+                        .frame(width: expandLines ? 48 : 0, height: 1)
+                        .animation(.easeOut(duration: 0.7).delay(0.85), value: expandLines)
+                }
+                .padding(.top, 12)
             }
-            .padding(.bottom, 28)
-
-            Text("REP METRO")
-                .font(.system(size: 56, weight: .bold, design: .rounded))
-                .tracking(10)
-                .foregroundStyle(AppTheme.parch)
-
-            Text("TEMPO TRAINING · GUIDED REPS")
-                .font(.system(size: 9, weight: .medium, design: .monospaced))
-                .tracking(5)
-                .foregroundStyle(AppTheme.dust)
-                .padding(.top, 8)
-
-            Rectangle()
-                .fill(AppTheme.blood)
-                .frame(width: 1, height: animateLine ? 48 : 0)
-                .padding(.top, 36)
-                .animation(.easeOut(duration: 1.8).delay(0.3), value: animateLine)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(AppTheme.ink.ignoresSafeArea())
         .onAppear {
-            animateLine = true
+            showGlow    = true
+            showIcon    = true
+            showTitle   = true
+            showSub     = true
+            expandLines = true
         }
     }
 }
