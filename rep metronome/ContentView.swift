@@ -1193,7 +1193,8 @@ private final class RepMetroViewModel: NSObject, ObservableObject {
         rpe = nil
         move(to: .active)
         speak("Set 1. Let's go.", delay: 0.3)
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.6) {
+        speak("Three. Two. One.", delay: 3.5)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 5.5) {
             self.speakRepComplete()
             self.startPhase(speechDelay: 0.65)
         }
