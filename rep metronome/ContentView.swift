@@ -1204,8 +1204,12 @@ private final class RepMetroViewModel: NSObject, ObservableObject {
         isPaused = false
         rpe = nil
         move(to: .active)
-        speak("Set 1. Let's go.", delay: 4.0)
-        DispatchQueue.main.asyncAfter(deadline: .now() + 6.5) {
+        let goRate: Float = 0.85
+        let goUrl = Bundle.main.url(forResource: "set_go_1", withExtension: "mp3")
+            ?? Bundle.main.url(forResource: "set_go_1", withExtension: "mp3", subdirectory: "AudioCues")
+        let goDuration = (goUrl.flatMap { try? AVAudioPlayer(contentsOf: $0) }?.duration ?? 2.0) / Double(goRate)
+        speak("Set 1. Let's go.", delay: 1.0, rate: goRate)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0 + goDuration + 1.0) {
             self.speakRepComplete()
             self.startPhase(speechDelay: 0.65)
         }
@@ -1383,7 +1387,7 @@ private final class RepMetroViewModel: NSObject, ObservableObject {
         speak("\(currentRep).")
     }
 
-    private func speak(_ text: String, delay: Double = 0) {
+    private func speak(_ text: String, delay: Double = 0, rate: Float = 1.0) {
         DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
             // Try pre-generated bundle audio first (root or AudioCues subfolder)
             if let key = Self.bundleKey(for: text) {
@@ -1392,6 +1396,10 @@ private final class RepMetroViewModel: NSObject, ObservableObject {
                 if let url, let player = try? AVAudioPlayer(contentsOf: url) {
                     self.audioPlayers.removeAll { !$0.isPlaying }
                     self.audioPlayers.append(player)
+                    if rate != 1.0 {
+                        player.enableRate = true
+                        player.rate = rate
+                    }
                     player.play()
                     return
                 }
