@@ -10,6 +10,14 @@ import Combine
 import SwiftUI
 import UIKit
 
+private func lockOrientation(_ mask: UIInterfaceOrientationMask) {
+    OrientationLock.shared.mask = mask
+    if let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
+        scene.requestGeometryUpdate(.iOS(interfaceOrientations: mask))
+        scene.windows.first?.rootViewController?.setNeedsUpdateOfSupportedInterfaceOrientations()
+    }
+}
+
 struct ContentView: View {
     @StateObject private var viewModel = RepMetroViewModel()
 
@@ -22,12 +30,16 @@ struct ContentView: View {
                 switch viewModel.currentScreen {
                 case .setup:
                     SetupScreen(viewModel: viewModel)
+                        .onAppear { lockOrientation(.portrait) }
                 case .active:
                     ActiveScreen(viewModel: viewModel)
+                        .onAppear { lockOrientation(.allButUpsideDown) }
                 case .rest:
                     RestScreen(viewModel: viewModel)
+                        .onAppear { lockOrientation(.portrait) }
                 case .log:
                     LogScreen(viewModel: viewModel)
+                        .onAppear { lockOrientation(.portrait) }
                 }
             }
             .transition(.asymmetric(insertion: .move(edge: .trailing).combined(with: .opacity),
