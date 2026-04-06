@@ -344,9 +344,10 @@ private struct PortraitActiveLayout: View {
             .padding(.horizontal, 24)
             .padding(.top, 36)
 
-            TickRow(total: viewModel.totalReps, current: viewModel.currentRep)
-                .padding(.top, 20)
-                .padding(.horizontal, 24)
+            BallTracker(viewModel: viewModel)
+                .frame(height: 100)
+                .padding(.top, 16)
+                .padding(.horizontal, 8)
 
             Spacer()
 
