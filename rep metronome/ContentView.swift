@@ -344,11 +344,6 @@ private struct PortraitActiveLayout: View {
             .padding(.horizontal, 24)
             .padding(.top, 36)
 
-            BallTracker(viewModel: viewModel)
-                .frame(height: 100)
-                .padding(.top, 16)
-                .padding(.horizontal, 8)
-
             Spacer()
 
             VStack(spacing: 0) {
@@ -376,10 +371,14 @@ private struct PortraitActiveLayout: View {
                     .tracking(4)
                     .foregroundStyle(AppTheme.fog)
                     .padding(.top, 10)
-
             }
 
-            Spacer()
+            BallTracker(viewModel: viewModel)
+                .frame(height: 160)
+                .padding(.top, 24)
+                .padding(.horizontal, 8)
+
+            Spacer(minLength: 8)
 
             Button {
                 viewModel.togglePause()
