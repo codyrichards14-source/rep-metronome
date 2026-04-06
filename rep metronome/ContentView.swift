@@ -377,10 +377,6 @@ private struct PortraitActiveLayout: View {
                     .foregroundStyle(AppTheme.fog)
                     .padding(.top, 10)
 
-                ArcTimerView(progress: viewModel.phaseProgress,
-                             remainingText: viewModel.phaseRemainingText,
-                             strokeColor: viewModel.isEccentric ? AppTheme.blood : AppTheme.parch)
-                    .padding(.top, 28)
             }
 
             Spacer()
