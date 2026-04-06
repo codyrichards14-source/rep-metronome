@@ -1135,7 +1135,7 @@ private final class RepMetroViewModel: NSObject, ObservableObject {
             ?? AVSpeechSynthesisVoice(language: "en-US")
             ?? voices[0]
     }()
-    private var audioPlayer: AVAudioPlayer?
+    private var audioPlayers: [AVAudioPlayer] = []
     private var phaseTimer: Timer?
     private var restTimer: Timer?
     private var splashTask: Task<Void, Never>?
@@ -1391,7 +1391,8 @@ private final class RepMetroViewModel: NSObject, ObservableObject {
                 let url = Bundle.main.url(forResource: key, withExtension: "mp3")
                     ?? Bundle.main.url(forResource: key, withExtension: "mp3", subdirectory: "AudioCues")
                 if let url, let player = try? AVAudioPlayer(contentsOf: url) {
-                    self.audioPlayer = player
+                    self.audioPlayers.removeAll { !$0.isPlaying }
+                    self.audioPlayers.append(player)
                     player.play()
                     return
                 }
@@ -1439,7 +1440,8 @@ private final class RepMetroViewModel: NSObject, ObservableObject {
     }
 
     private func stopAudio() {
-        audioPlayer?.stop()
+        audioPlayers.forEach { $0.stop() }
+        audioPlayers.removeAll()
         speech.stopSpeaking(at: .immediate)
     }
 
