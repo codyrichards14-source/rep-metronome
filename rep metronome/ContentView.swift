@@ -175,27 +175,173 @@ private struct SplashScreen: View {
     }
 }
 
+private struct InfoScreen: View {
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        ZStack(alignment: .topTrailing) {
+            AppTheme.ink.ignoresSafeArea()
+
+            ScrollView(showsIndicators: false) {
+                VStack(alignment: .leading, spacing: 0) {
+
+                    // Header
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("TEMPO TRAINING")
+                            .font(.system(size: 28, weight: .bold, design: .rounded))
+                            .foregroundStyle(AppTheme.parch)
+                        Text("WHY IT WORKS · HOW TO USE IT")
+                            .font(.system(size: 10, weight: .medium, design: .monospaced))
+                            .tracking(4)
+                            .foregroundStyle(AppTheme.fog)
+                    }
+                    .padding(.top, 56)
+                    .padding(.bottom, 28)
+                    .overlay(alignment: .bottom) {
+                        Rectangle().fill(AppTheme.rim).frame(height: 1)
+                    }
+
+                    // Why tempo training
+                    InfoSection(title: "WHY TEMPO TRAINING") {
+                        InfoParagraph("Most people focus on what they lift — tempo training focuses on how. By controlling the speed of each phase of a rep, you increase time under tension, the primary driver of muscle growth and strength adaptation.")
+                        InfoParagraph("Slowing the eccentric (lowering) phase recruits more muscle fibers and causes greater mechanical stress than simply dropping the weight. Research consistently shows controlled eccentrics produce superior hypertrophy compared to free-tempo lifting.")
+                        InfoParagraph("Tempo training also builds body awareness. When you're forced to own every inch of a movement, you identify weak points, improve joint stability, and reduce injury risk.")
+                    }
+
+                    // Eccentric / Concentric
+                    InfoSection(title: "THE TWO PHASES") {
+                        InfoRow(label: "ECCENTRIC", detail: "The lowering or lengthening phase. Example: descending into a squat, lowering a barbell during a bench press, or the down phase of a curl. This is where the most muscle damage — and growth stimulus — occurs.")
+                        InfoRow(label: "CONCENTRIC", detail: "The lifting or contracting phase. Example: driving out of the squat, pressing the bar up, or curling the weight up. Keep this phase controlled — don't use momentum.")
+                    }
+
+                    // Features
+                    InfoSection(title: "APP FEATURES") {
+                        InfoRow(label: "AUDIO CUES", detail: "The app calls each rep number, then cues \"Down\" and \"Up\" in sync with your tempo. You never need to watch the screen — keep your eyes on your form.")
+                        InfoRow(label: "WAVE TRACKER", detail: "The glowing sine wave shows your position within the set. The ball travels left to right across all reps, rising and falling with each eccentric and concentric phase. Red means eccentric, white means concentric.")
+                        InfoRow(label: "SETS & REST", detail: "Configure multiple sets with automatic rest timers between them. The app counts down your rest and cues you when it's time to go again.")
+                        InfoRow(label: "EXERCISE PRESETS", detail: "Select a common exercise to auto-fill recommended eccentric and concentric tempos, or set them manually for any movement.")
+                        InfoRow(label: "LANDSCAPE MODE", detail: "Rotate your phone during a set for a wider view of the wave tracker — useful when your phone is propped up in a cage or on a bench.")
+                    }
+
+                    // Recommended tempos
+                    InfoSection(title: "GETTING STARTED") {
+                        InfoParagraph("A good starting tempo is 3 seconds eccentric, 1 second concentric. This is written as 3-1 in tempo notation and applies to almost any compound lift.")
+                        InfoParagraph("As you build control, try 4-1 or 5-1 eccentrics. You'll likely need to reduce the weight — that's expected and correct.")
+                        InfoParagraph("Rest 60–90 seconds between sets for hypertrophy work. Longer rest (2–3 min) is appropriate for heavier strength-focused sets.")
+                    }
+
+                    Spacer(minLength: 48)
+                }
+                .padding(.horizontal, 24)
+            }
+
+            Button { dismiss() } label: {
+                Image(systemName: "xmark")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(AppTheme.fog)
+                    .padding(10)
+                    .background(AppTheme.panel)
+                    .clipShape(Circle())
+                    .overlay(Circle().stroke(AppTheme.rim, lineWidth: 1))
+            }
+            .buttonStyle(.plain)
+            .padding(.top, 16)
+            .padding(.trailing, 20)
+        }
+    }
+}
+
+private struct InfoSection<Content: View>: View {
+    let title: String
+    @ViewBuilder let content: () -> Content
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text(title)
+                .font(.system(size: 11, weight: .semibold, design: .monospaced))
+                .tracking(3)
+                .foregroundStyle(AppTheme.blood)
+                .padding(.top, 32)
+            content()
+        }
+        .padding(.bottom, 8)
+        .overlay(alignment: .bottom) {
+            Rectangle().fill(AppTheme.rim.opacity(0.5)).frame(height: 1)
+        }
+    }
+}
+
+private struct InfoParagraph: View {
+    let text: String
+    init(_ text: String) { self.text = text }
+
+    var body: some View {
+        Text(text)
+            .font(.system(size: 15, weight: .regular, design: .default))
+            .foregroundStyle(AppTheme.fog)
+            .lineSpacing(5)
+            .fixedSize(horizontal: false, vertical: true)
+    }
+}
+
+private struct InfoRow: View {
+    let label: String
+    let detail: String
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(label)
+                .font(.system(size: 11, weight: .semibold, design: .monospaced))
+                .tracking(2)
+                .foregroundStyle(AppTheme.parch)
+            Text(detail)
+                .font(.system(size: 15, weight: .regular))
+                .foregroundStyle(AppTheme.fog)
+                .lineSpacing(5)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(.vertical, 12)
+        .padding(.horizontal, 14)
+        .background(AppTheme.panel)
+        .clipShape(RoundedRectangle(cornerRadius: 8))
+        .overlay(RoundedRectangle(cornerRadius: 8).stroke(AppTheme.rim, lineWidth: 1))
+    }
+}
+
 private struct SetupScreen: View {
     @ObservedObject var viewModel: RepMetroViewModel
+    @State private var showInfo = false
 
     var body: some View {
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: 0) {
-                VStack(alignment: .leading, spacing: 6) {
-                    HStack(spacing: 0) {
-                        Text("REP ")
-                            .font(.system(size: 52, weight: .bold, design: .rounded))
-                            .foregroundStyle(AppTheme.parch)
+                HStack(alignment: .top) {
+                    VStack(alignment: .leading, spacing: 6) {
+                        HStack(spacing: 0) {
+                            Text("REP ")
+                                .font(.system(size: 52, weight: .bold, design: .rounded))
+                                .foregroundStyle(AppTheme.parch)
 
-                        Text("METRO")
-                            .font(.system(size: 52, weight: .bold, design: .rounded))
-                            .foregroundStyle(AppTheme.blood)
+                            Text("METRO")
+                                .font(.system(size: 52, weight: .bold, design: .rounded))
+                                .foregroundStyle(AppTheme.blood)
+                        }
+
+                        Text("TEMPO TRAINING · GUIDED REPS")
+                            .font(.system(size: 10, weight: .medium, design: .monospaced))
+                            .tracking(4)
+                            .foregroundStyle(AppTheme.fog)
                     }
 
-                    Text("TEMPO TRAINING · GUIDED REPS")
-                        .font(.system(size: 10, weight: .medium, design: .monospaced))
-                        .tracking(4)
-                        .foregroundStyle(AppTheme.fog)
+                    Spacer()
+
+                    Button { showInfo = true } label: {
+                        Image(systemName: "info.circle")
+                            .font(.system(size: 22, weight: .regular))
+                            .foregroundStyle(AppTheme.fog)
+                    }
+                    .buttonStyle(.plain)
+                    .padding(.top, 52)
                 }
                 .padding(.top, 48)
                 .padding(.bottom, 32)
@@ -203,6 +349,9 @@ private struct SetupScreen: View {
                     Rectangle()
                         .fill(AppTheme.rim)
                         .frame(height: 1)
+                }
+                .sheet(isPresented: $showInfo) {
+                    InfoScreen()
                 }
 
                 VStack(alignment: .leading, spacing: 20) {
