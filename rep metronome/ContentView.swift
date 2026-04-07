@@ -455,8 +455,14 @@ private struct ActiveScreen: View {
             }
         }
         .ignoresSafeArea()
-        .onAppear { UIApplication.shared.isIdleTimerDisabled = true }
-        .onDisappear { UIApplication.shared.isIdleTimerDisabled = false }
+        .onAppear {
+            UIApplication.shared.isIdleTimerDisabled = true
+            viewModel.duckBackgroundAudio()
+        }
+        .onDisappear {
+            UIApplication.shared.isIdleTimerDisabled = false
+            viewModel.unduckBackgroundAudio()
+        }
     }
 }
 
@@ -1290,6 +1296,16 @@ private final class RepMetroViewModel: NSObject, ObservableObject {
 
     override init() {
         super.init()
+        try? AVAudioSession.sharedInstance().setCategory(.playback, mode: .default, options: [.mixWithOthers])
+        try? AVAudioSession.sharedInstance().setActive(true)
+    }
+
+    func duckBackgroundAudio() {
+        try? AVAudioSession.sharedInstance().setCategory(.playback, mode: .default, options: [.mixWithOthers, .duckOthers])
+        try? AVAudioSession.sharedInstance().setActive(true)
+    }
+
+    func unduckBackgroundAudio() {
         try? AVAudioSession.sharedInstance().setCategory(.playback, mode: .default, options: [.mixWithOthers])
         try? AVAudioSession.sharedInstance().setActive(true)
     }
