@@ -311,6 +311,11 @@ private struct InfoRow: View {
 private struct SetupScreen: View {
     @ObservedObject var viewModel: RepMetroViewModel
     @State private var showInfo = false
+    @State private var showHeader = false
+    @State private var showFields = false
+    @State private var showExercise = false
+    @State private var showTempo = false
+    @State private var showButton = false
 
     var body: some View {
         ScrollView(showsIndicators: false) {
@@ -362,6 +367,9 @@ private struct SetupScreen: View {
                             NumberCell(title: "Rest (s)", text: viewModel.binding(for: \.restText), alignLeading: false)
                         }
                     }
+                    .opacity(showFields ? 1 : 0)
+                    .offset(y: showFields ? 0 : 12)
+                    .animation(.easeOut(duration: 0.4).delay(0.15), value: showFields)
 
                     Button {
                         viewModel.showExerciseModal = true
@@ -392,17 +400,26 @@ private struct SetupScreen: View {
                         .overlay(RoundedRectangle(cornerRadius: 8).stroke(AppTheme.rim, lineWidth: 1))
                     }
                     .buttonStyle(.plain)
+                    .opacity(showExercise ? 1 : 0)
+                    .offset(y: showExercise ? 0 : 12)
+                    .animation(.easeOut(duration: 0.4).delay(0.25), value: showExercise)
 
                     HStack(spacing: 8) {
                         PhaseChip(title: "ECCENTRIC", subtitle: "Lower · Lengthen")
                         PhaseChip(title: "CONCENTRIC", subtitle: "Lift · Contract")
                     }
                     .padding(.bottom, 8)
+                    .opacity(showTempo ? 1 : 0)
+                    .offset(y: showTempo ? 0 : 12)
+                    .animation(.easeOut(duration: 0.4).delay(0.35), value: showTempo)
 
                     HStack(spacing: 8) {
                         NumberCell(title: "Seconds Down", text: viewModel.binding(for: \.eccentricText), alignLeading: false)
                         NumberCell(title: "Seconds Up", text: viewModel.binding(for: \.concentricText), alignLeading: false)
                     }
+                    .opacity(showTempo ? 1 : 0)
+                    .offset(y: showTempo ? 0 : 12)
+                    .animation(.easeOut(duration: 0.4).delay(0.4), value: showTempo)
 
                     Button {
                         viewModel.beginWorkout()
@@ -418,6 +435,9 @@ private struct SetupScreen: View {
                     }
                     .buttonStyle(PressButtonStyle(pressedColor: AppTheme.rose))
                     .padding(.top, 8)
+                    .opacity(showButton ? 1 : 0)
+                    .offset(y: showButton ? 0 : 12)
+                    .animation(.easeOut(duration: 0.4).delay(0.5), value: showButton)
                 }
                 .padding(.top, 32)
             }
@@ -425,6 +445,12 @@ private struct SetupScreen: View {
             .padding(.bottom, 32)
         }
         .background(AppTheme.ink.ignoresSafeArea())
+        .onAppear {
+            showFields = true
+            showExercise = true
+            showTempo = true
+            showButton = true
+        }
     }
 }
 
@@ -446,6 +472,12 @@ private struct ActiveScreen: View {
                     endRadius: 360
                 )
                 .ignoresSafeArea()
+
+                // Phase transition flash
+                Color.white
+                    .opacity(viewModel.phaseFlash ? 0.07 : 0)
+                    .ignoresSafeArea()
+                    .animation(.easeOut(duration: 0.18), value: viewModel.phaseFlash)
 
                 if geo.size.width > geo.size.height {
                     LandscapeActiveLayout(viewModel: viewModel)
@@ -521,6 +553,11 @@ private struct PortraitActiveLayout: View {
                     .font(.system(size: 132, weight: .bold, design: .rounded))
                     .foregroundStyle(AppTheme.parch)
                     .shadow(color: AppTheme.parch.opacity(0.15), radius: 30)
+                    .id(viewModel.repAnimID)
+                    .transition(.asymmetric(
+                        insertion: .move(edge: .bottom).combined(with: .opacity),
+                        removal: .move(edge: .top).combined(with: .opacity)
+                    ))
 
                 Text("OF \(viewModel.totalReps) REPS")
                     .font(.system(size: 11, weight: .semibold, design: .monospaced))
@@ -614,6 +651,11 @@ private struct LandscapeActiveLayout: View {
                     Text("\(viewModel.currentRep)")
                         .font(.system(size: 64, weight: .bold, design: .rounded))
                         .foregroundStyle(AppTheme.parch)
+                        .id(viewModel.repAnimID)
+                        .transition(.asymmetric(
+                            insertion: .move(edge: .bottom).combined(with: .opacity),
+                            removal: .move(edge: .top).combined(with: .opacity)
+                        ))
 
                     Text("OF \(viewModel.totalReps) REPS")
                         .font(.system(size: 11, weight: .semibold, design: .monospaced))
@@ -767,37 +809,44 @@ private struct RestScreen: View {
                 .font(.system(size: 11, weight: .semibold, design: .monospaced))
                 .tracking(6)
                 .foregroundStyle(AppTheme.fog)
-                .padding(.bottom, 8)
+                .padding(.bottom, 32)
 
-            Text("\(viewModel.restRemaining)")
-                .font(.system(size: 142, weight: .bold, design: .rounded))
-                .foregroundStyle(viewModel.restRemaining <= 10 ? AppTheme.rose : AppTheme.parch)
+            // Ring timer
+            ZStack {
+                Circle()
+                    .stroke(AppTheme.rim, lineWidth: 6)
+                    .frame(width: 220, height: 220)
 
-            Text("SECONDS REMAINING")
-                .font(.system(size: 11, weight: .semibold, design: .monospaced))
-                .tracking(5)
-                .foregroundStyle(AppTheme.fog)
-                .padding(.top, 4)
-                .padding(.bottom, 40)
+                Circle()
+                    .trim(from: 0, to: CGFloat(viewModel.restProgress))
+                    .stroke(
+                        viewModel.restRemaining <= 10 ? AppTheme.rose : AppTheme.blood,
+                        style: StrokeStyle(lineWidth: 6, lineCap: .round)
+                    )
+                    .rotationEffect(.degrees(-90))
+                    .frame(width: 220, height: 220)
+                    .animation(.linear(duration: 1.0), value: viewModel.restProgress)
+                    .shadow(color: (viewModel.restRemaining <= 10 ? AppTheme.rose : AppTheme.blood).opacity(0.6), radius: 8)
+
+                VStack(spacing: 4) {
+                    Text("\(viewModel.restRemaining)")
+                        .font(.system(size: 72, weight: .bold, design: .rounded))
+                        .foregroundStyle(viewModel.restRemaining <= 10 ? AppTheme.rose : AppTheme.parch)
+                        .contentTransition(.numericText(countsDown: true))
+                        .animation(.linear(duration: 0.3), value: viewModel.restRemaining)
+                    Text("SECONDS")
+                        .font(.system(size: 10, weight: .semibold, design: .monospaced))
+                        .tracking(4)
+                        .foregroundStyle(AppTheme.fog)
+                }
+            }
+            .padding(.bottom, 32)
 
             Text("SET \(viewModel.currentSet) OF \(viewModel.totalSets) COMPLETE")
                 .font(.system(size: 11, weight: .semibold, design: .monospaced))
                 .tracking(4)
                 .foregroundStyle(AppTheme.fog)
                 .padding(.bottom, 40)
-
-            GeometryReader { geometry in
-                ZStack(alignment: .leading) {
-                    Rectangle()
-                        .fill(AppTheme.rim)
-                    Rectangle()
-                        .fill(AppTheme.blood)
-                        .frame(width: geometry.size.width * viewModel.restProgress)
-                }
-            }
-            .frame(height: 1)
-            .padding(.horizontal, 24)
-            .padding(.bottom, 40)
 
             VStack(spacing: 10) {
                 Button {
@@ -1330,6 +1379,8 @@ private final class RepMetroViewModel: NSObject, ObservableObject {
     @Published var phaseDuration: Double = 1
     @Published var restRemaining = 90
     @Published var restTotal = 90
+    @Published var phaseFlash = false
+    @Published var repAnimID = UUID()
 
     @Published var rpe: Int?
 
@@ -1496,7 +1547,9 @@ private final class RepMetroViewModel: NSObject, ObservableObject {
         phaseDuration = Double(isEccentric ? eccentricSeconds : concentricSeconds)
         phaseElapsed = 0
         speakPhase(delay: speechDelay)
-        impact(style: isEccentric ? .medium : .light)
+        impact(style: isEccentric ? .heavy : .medium)
+        phaseFlash = true
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.18) { self.phaseFlash = false }
 
         phaseTimer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { [weak self] _ in
             guard let self else { return }
@@ -1518,6 +1571,7 @@ private final class RepMetroViewModel: NSObject, ObservableObject {
             finishSet()
         } else {
             currentRep += 1
+            repAnimID = UUID()
             speakRepComplete()
             isEccentric = true
             startPhase(speechDelay: 0.65)
