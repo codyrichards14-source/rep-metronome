@@ -921,41 +921,6 @@ private struct LogScreen: View {
                 )
                 .padding(.bottom, 24)
 
-                Text("Rate of Perceived Exertion")
-                    .font(.system(size: 11, weight: .semibold, design: .monospaced))
-                    .tracking(4)
-                    .foregroundStyle(AppTheme.fog)
-                    .textCase(.uppercase)
-                    .padding(.bottom, 8)
-
-                HStack(spacing: 6) {
-                    ForEach([6, 7, 8, 9, 10], id: \.self) { value in
-                        Button {
-                            viewModel.setRPE(value)
-                        } label: {
-                            Text("\(value)")
-                                .font(.system(size: 18, weight: .bold, design: .rounded))
-                                .foregroundStyle(viewModel.rpe == value ? AppTheme.parch : AppTheme.fog)
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 11)
-                                .background(viewModel.rpe == value ? AppTheme.blood : AppTheme.panel)
-                                .clipShape(RoundedRectangle(cornerRadius: 8))
-                                .overlay(RoundedRectangle(cornerRadius: 8).stroke(viewModel.rpe == value ? AppTheme.blood : AppTheme.rim, lineWidth: 1))
-                                .scaleEffect(viewModel.rpe == value ? 1.04 : 1.0)
-                                .animation(.spring(response: 0.2, dampingFraction: 0.6), value: viewModel.rpe)
-                        }
-                        .buttonStyle(.plain)
-                    }
-                }
-                .padding(.bottom, 6)
-
-                Text(viewModel.rpeHint)
-                    .font(.system(size: 11, weight: .medium, design: .monospaced))
-                    .tracking(2)
-                    .foregroundStyle(AppTheme.fog)
-                    .frame(minHeight: 14, alignment: .leading)
-                    .padding(.bottom, 20)
-
                 // Primary action — filled
                 Button {
                     viewModel.logAndContinue()
@@ -1382,7 +1347,6 @@ private final class RepMetroViewModel: NSObject, ObservableObject {
     @Published var phaseFlash = false
     @Published var repAnimID = UUID()
 
-    @Published var rpe: Int?
 
     let exerciseSections = ExerciseSection.library
 
@@ -1448,10 +1412,6 @@ private final class RepMetroViewModel: NSObject, ObservableObject {
     }
 
     var isLastSet: Bool { currentSet >= totalSets }
-    var rpeHint: String {
-        guard let rpe else { return "" }
-        return Self.rpeDescriptions[rpe] ?? ""
-    }
 
     var restProgress: Double {
         guard restTotal > 0 else { return 0 }
@@ -1471,7 +1431,7 @@ private final class RepMetroViewModel: NSObject, ObservableObject {
         currentRep = 1
         isEccentric = true
         isPaused = false
-        rpe = nil
+
         move(to: .active)
         let goRate: Float = 0.85
         let goUrl = Bundle.main.url(forResource: "set_go_1", withExtension: "mp3")
@@ -1504,11 +1464,6 @@ private final class RepMetroViewModel: NSObject, ObservableObject {
         impact(style: .heavy)
         speak("Set \(currentSet). Let's go.", delay: 0.2)
         startCurrentSet()
-    }
-
-    func setRPE(_ value: Int) {
-        rpe = value
-        impact(style: .light)
     }
 
     func logAndContinue() {
@@ -1592,7 +1547,7 @@ private final class RepMetroViewModel: NSObject, ObservableObject {
             : "Set \(currentSet) done. Take your rest."
         speak(message)
 
-        rpe = nil
+
         move(to: .log)
     }
 
@@ -1740,13 +1695,6 @@ private final class RepMetroViewModel: NSObject, ObservableObject {
         generator.notificationOccurred(type)
     }
 
-    private static let rpeDescriptions: [Int: String] = [
-        6: "Easy — many reps left",
-        7: "Moderate — 3+ in reserve",
-        8: "Hard — 2 reps left",
-        9: "Very hard — 1 rep left",
-        10: "Max — nothing left"
-    ]
 }
 
 private extension RepMetroViewModel {
