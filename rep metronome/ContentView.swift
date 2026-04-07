@@ -455,6 +455,8 @@ private struct ActiveScreen: View {
             }
         }
         .ignoresSafeArea()
+        .onAppear { UIApplication.shared.isIdleTimerDisabled = true }
+        .onDisappear { UIApplication.shared.isIdleTimerDisabled = false }
     }
 }
 
