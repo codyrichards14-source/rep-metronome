@@ -485,6 +485,19 @@ private struct PortraitActiveLayout: View {
 
                 Spacer()
 
+                Button("SKIP") {
+                    viewModel.skipSet()
+                }
+                .font(.system(size: 11, weight: .semibold, design: .monospaced))
+                .tracking(2)
+                .foregroundStyle(AppTheme.fog)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 5)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 8)
+                        .stroke(AppTheme.rim, lineWidth: 1)
+                )
+
                 Button("STOP") {
                     viewModel.stopWorkout()
                 }
@@ -576,6 +589,14 @@ private struct LandscapeActiveLayout: View {
                         .overlay(RoundedRectangle(cornerRadius: 8).stroke(AppTheme.rim, lineWidth: 1))
 
                     Spacer()
+
+                    Button("SKIP") { viewModel.skipSet() }
+                        .font(.system(size: 11, weight: .semibold, design: .monospaced))
+                        .tracking(2)
+                        .foregroundStyle(AppTheme.fog)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 6)
+                        .overlay(RoundedRectangle(cornerRadius: 8).stroke(AppTheme.rim, lineWidth: 1))
 
                     Button("STOP") { viewModel.stopWorkout() }
                         .font(.system(size: 11, weight: .semibold, design: .monospaced))
@@ -1501,6 +1522,10 @@ private final class RepMetroViewModel: NSObject, ObservableObject {
             isEccentric = true
             startPhase(speechDelay: 0.65)
         }
+    }
+
+    func skipSet() {
+        finishSet()
     }
 
     private func finishSet() {
