@@ -119,8 +119,8 @@ private struct SplashScreen: View {
                         .frame(width: 76, height: 76)
                         .shadow(color: AppTheme.blood.opacity(0.5), radius: 16)
 
-                    BarbellGlyph()
-                        .frame(width: 40, height: 40)
+                    BarbellGlyph(foreground: AppTheme.parch)
+                        .frame(width: 52, height: 26)
                 }
                 .scaleEffect(showIcon ? 1.0 : 0.4)
                 .opacity(showIcon ? 1 : 0)
@@ -1197,33 +1197,67 @@ private struct StatCell: View {
 }
 
 private struct BarbellGlyph: View {
+    var foreground: Color = AppTheme.parch
     var body: some View {
-        GeometryReader { geometry in
-            let width = geometry.size.width
-            let height = geometry.size.height
-            let barHeight = height * 0.14
+        GeometryReader { geo in
+            let w = geo.size.width
+            let h = geo.size.height
+            let cx = w / 2
+            let cy = h / 2
+            // Proportions
+            let barW      = w * 0.36
+            let barH      = h * 0.13
+            let collarW   = w * 0.07
+            let collarH   = h * 0.28
+            let plateW    = w * 0.13
+            let plateH    = h * 0.78
+            let capW      = w * 0.06
+            let capH      = h * 0.20
+            let offset    = barW / 2
 
             ZStack {
-                Rectangle()
-                    .fill(AppTheme.blood)
-                    .frame(width: width * 0.4, height: barHeight)
+                // Center bar
+                RoundedRectangle(cornerRadius: barH / 2)
+                    .fill(foreground)
+                    .frame(width: barW, height: barH)
+                    .position(x: cx, y: cy)
 
-                HStack(spacing: width * 0.42) {
-                    Rectangle().fill(AppTheme.blood).frame(width: width * 0.11, height: height * 0.24)
-                    Rectangle().fill(AppTheme.blood).frame(width: width * 0.11, height: height * 0.24)
-                }
+                // Left collar
+                RoundedRectangle(cornerRadius: 2)
+                    .fill(foreground.opacity(0.85))
+                    .frame(width: collarW, height: collarH)
+                    .position(x: cx - offset - collarW / 2, y: cy)
 
-                HStack(spacing: width * 0.63) {
-                    Rectangle().fill(AppTheme.blood).frame(width: width * 0.15, height: height * 0.42)
-                    Rectangle().fill(AppTheme.blood).frame(width: width * 0.15, height: height * 0.42)
-                }
+                // Right collar
+                RoundedRectangle(cornerRadius: 2)
+                    .fill(foreground.opacity(0.85))
+                    .frame(width: collarW, height: collarH)
+                    .position(x: cx + offset + collarW / 2, y: cy)
 
-                HStack(spacing: width * 0.8) {
-                    Rectangle().fill(AppTheme.blood).frame(width: width * 0.18, height: height * 0.22)
-                    Rectangle().fill(AppTheme.blood).frame(width: width * 0.18, height: height * 0.22)
-                }
+                // Left plate
+                RoundedRectangle(cornerRadius: 4)
+                    .fill(foreground.opacity(0.75))
+                    .frame(width: plateW, height: plateH)
+                    .position(x: cx - offset - collarW - plateW / 2, y: cy)
+
+                // Right plate
+                RoundedRectangle(cornerRadius: 4)
+                    .fill(foreground.opacity(0.75))
+                    .frame(width: plateW, height: plateH)
+                    .position(x: cx + offset + collarW + plateW / 2, y: cy)
+
+                // Left end cap
+                RoundedRectangle(cornerRadius: 2)
+                    .fill(foreground.opacity(0.6))
+                    .frame(width: capW, height: capH)
+                    .position(x: cx - offset - collarW - plateW - capW / 2, y: cy)
+
+                // Right end cap
+                RoundedRectangle(cornerRadius: 2)
+                    .fill(foreground.opacity(0.6))
+                    .frame(width: capW, height: capH)
+                    .position(x: cx + offset + collarW + plateW + capW / 2, y: cy)
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
     }
 }
