@@ -1,0 +1,49 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "rep metronome — iPhone 17 Pro (Debug)",
+      "runtimeExecutable": "xcodebuild",
+      "runtimeArgs": [
+        "-scheme", "rep metronome",
+        "-destination", "platform=iOS Simulator,name=iPhone 17 Pro",
+        "-configuration", "Debug",
+        "build"
+      ],
+      "port": 0
+    },
+    {
+      "name": "rep metronome — iPhone 17 Pro Max (Debug)",
+      "runtimeExecutable": "xcodebuild",
+      "runtimeArgs": [
+        "-scheme", "rep metronome",
+        "-destination", "platform=iOS Simulator,name=iPhone 17 Pro Max",
+        "-configuration", "Debug",
+        "build"
+      ],
+      "port": 0
+    },
+    {
+      "name": "rep metronome — iPhone Air (Debug)",
+      "runtimeExecutable": "xcodebuild",
+      "runtimeArgs": [
+        "-scheme", "rep metronome",
+        "-destination", "platform=iOS Simulator,name=iPhone Air",
+        "-configuration", "Debug",
+        "build"
+      ],
+      "port": 0
+    },
+    {
+      "name": "rep metronome — iPad Pro 13-inch M5 (Debug)",
+      "runtimeExecutable": "xcodebuild",
+      "runtimeArgs": [
+        "-scheme", "rep metronome",
+        "-destination", "platform=iOS Simulator,name=iPad Pro 13-inch (M5)",
+        "-configuration", "Debug",
+        "build"
+      ],
+      "port": 0
+    }
+  ]
+}
