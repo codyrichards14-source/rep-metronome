@@ -883,6 +883,8 @@ private struct RestScreen: View {
             Spacer()
         }
         .background(AppTheme.deep.ignoresSafeArea())
+        .onAppear { UIApplication.shared.isIdleTimerDisabled = true }
+        .onDisappear { UIApplication.shared.isIdleTimerDisabled = false }
     }
 }
 
