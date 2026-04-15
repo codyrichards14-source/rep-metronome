@@ -75,7 +75,6 @@ private enum AppTheme {
     static let ink = Color(hex: 0x0A0000)
     static let deep = Color(hex: 0x130000)
     static let panel = Color(hex: 0x260006)
-    static let card = Color(hex: 0x2E0008)
     static let rim = Color(hex: 0x6A0014)
     static let dust = Color(hex: 0xAA7880)
     static let fog = Color(hex: 0xCFB0B8)
@@ -320,36 +319,25 @@ private struct SetupScreen: View {
     var body: some View {
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: 0) {
-                HStack(alignment: .top) {
-                    VStack(alignment: .leading, spacing: 6) {
-                        HStack(spacing: 0) {
-                            Text("REP ")
-                                .font(.system(size: 52, weight: .bold, design: .rounded))
-                                .foregroundStyle(AppTheme.parch)
+                VStack(alignment: .leading, spacing: 6) {
+                    HStack(spacing: 0) {
+                        Text("REP ")
+                            .font(.system(size: 52, weight: .bold, design: .rounded))
+                            .foregroundStyle(AppTheme.parch)
 
-                            Text("METRO")
-                                .font(.system(size: 52, weight: .bold, design: .rounded))
-                                .foregroundStyle(AppTheme.blood)
-                        }
-
-                        Text("TEMPO TRAINING · GUIDED REPS")
-                            .font(.system(size: 10, weight: .medium, design: .monospaced))
-                            .tracking(4)
-                            .foregroundStyle(AppTheme.fog)
+                        Text("METRO")
+                            .font(.system(size: 52, weight: .bold, design: .rounded))
+                            .foregroundStyle(AppTheme.blood)
                     }
 
-                    Spacer()
-
-                    Button { showInfo = true } label: {
-                        Image(systemName: "info.circle")
-                            .font(.system(size: 22, weight: .regular))
-                            .foregroundStyle(AppTheme.fog)
-                    }
-                    .buttonStyle(.plain)
-                    .padding(.top, 52)
+                    Text("TEMPO TRAINING · GUIDED REPS")
+                        .font(.system(size: 10, weight: .medium, design: .monospaced))
+                        .tracking(4)
+                        .foregroundStyle(AppTheme.fog)
                 }
                 .padding(.top, 48)
                 .padding(.bottom, 32)
+                .frame(maxWidth: .infinity, alignment: .leading)
                 .overlay(alignment: .bottom) {
                     Rectangle()
                         .fill(AppTheme.rim)
@@ -445,6 +433,15 @@ private struct SetupScreen: View {
             .padding(.bottom, 32)
         }
         .background(AppTheme.ink.ignoresSafeArea())
+        .overlay(alignment: .topTrailing) {
+            Button { showInfo = true } label: {
+                Image(systemName: "info.circle")
+                    .font(.system(size: 20, weight: .regular))
+                    .foregroundStyle(AppTheme.fog)
+                    .padding(20)
+            }
+            .buttonStyle(.plain)
+        }
         .onAppear {
             showFields = true
             showExercise = true
@@ -939,39 +936,20 @@ private struct LogScreen: View {
                 .buttonStyle(PressButtonStyle(pressedColor: AppTheme.rose))
                 .padding(.bottom, 8)
 
-                HStack(spacing: 8) {
-                    // Secondary action
-                    Button {
-                        viewModel.logAndFinish()
-                    } label: {
-                        Text("FINISH")
-                            .font(.system(size: 14, weight: .bold, design: .rounded))
-                            .tracking(3)
-                            .foregroundStyle(AppTheme.fog)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 13)
-                            .background(AppTheme.panel)
-                            .clipShape(RoundedRectangle(cornerRadius: 8))
-                            .overlay(RoundedRectangle(cornerRadius: 8).stroke(AppTheme.rim, lineWidth: 1))
-                    }
-                    .buttonStyle(.plain)
-
-                    // Tertiary action
-                    Button {
-                        viewModel.skipLog()
-                    } label: {
-                        Text(viewModel.isLastSet ? "SKIP" : "SKIP → REST")
-                            .font(.system(size: 14, weight: .medium, design: .monospaced))
-                            .tracking(3)
-                            .foregroundStyle(AppTheme.fog)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 13)
-                            .background(AppTheme.panel)
-                            .clipShape(RoundedRectangle(cornerRadius: 8))
-                            .overlay(RoundedRectangle(cornerRadius: 8).stroke(AppTheme.rim, lineWidth: 1))
-                    }
-                    .buttonStyle(.plain)
+                Button {
+                    viewModel.endWorkout()
+                } label: {
+                    Text("END WORKOUT")
+                        .font(.system(size: 14, weight: .bold, design: .rounded))
+                        .tracking(3)
+                        .foregroundStyle(AppTheme.fog)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 13)
+                        .background(AppTheme.panel)
+                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                        .overlay(RoundedRectangle(cornerRadius: 8).stroke(AppTheme.rim, lineWidth: 1))
                 }
+                .buttonStyle(.plain)
                 .padding(.bottom, 10)
             }
             .padding(.horizontal, 24)
@@ -1408,10 +1386,6 @@ private final class RepMetroViewModel: NSObject, ObservableObject {
     var phaseTitle: String { isEccentric ? "DOWN" : "UP" }
     var phaseSubtitle: String { isEccentric ? "ECCENTRIC · LOWER THE WEIGHT" : "CONCENTRIC · DRIVE THE WEIGHT" }
     var phaseProgress: Double { min(max(phaseElapsed / max(phaseDuration, 0.1), 0), 1) }
-    var phaseRemainingText: String {
-        let remaining = max(phaseDuration - phaseElapsed, 0)
-        return remaining < 1 ? String(format: "%.1f", remaining) : "\(Int(ceil(remaining)))"
-    }
 
     var isLastSet: Bool { currentSet >= totalSets }
 
@@ -1450,6 +1424,9 @@ private final class RepMetroViewModel: NSObject, ObservableObject {
         isPaused.toggle()
         if isPaused {
             stopAudio()
+        } else {
+            impact(style: .medium)
+            speakPhase(delay: 0.2)
         }
     }
 
@@ -1464,7 +1441,6 @@ private final class RepMetroViewModel: NSObject, ObservableObject {
         stopAudio()
         currentSet += 1
         impact(style: .heavy)
-        speak("Set \(currentSet). Let's go.", delay: 0.2)
         startCurrentSet()
     }
 
@@ -1476,16 +1452,10 @@ private final class RepMetroViewModel: NSObject, ObservableObject {
         }
     }
 
-    func logAndFinish() {
+    func endWorkout() {
+        invalidateTimers()
+        stopAudio()
         move(to: .setup)
-    }
-
-    func skipLog() {
-        if isLastSet {
-            move(to: .setup)
-        } else {
-            startRest()
-        }
     }
 
     private func startCurrentSet() {
@@ -1493,7 +1463,12 @@ private final class RepMetroViewModel: NSObject, ObservableObject {
         isEccentric = true
         isPaused = false
         move(to: .active)
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.4) {
+        let goRate: Float = 0.85
+        let goUrl = Bundle.main.url(forResource: "set_go_\(currentSet)", withExtension: "mp3")
+            ?? Bundle.main.url(forResource: "set_go_\(currentSet)", withExtension: "mp3", subdirectory: "AudioCues")
+        let goDuration = (goUrl.flatMap { try? AVAudioPlayer(contentsOf: $0) }?.duration ?? 2.0) / Double(goRate)
+        speak("Set \(currentSet). Let's go.", delay: 1.0, rate: goRate)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0 + goDuration + 1.0) {
             self.speakRepComplete()
             self.startPhase(speechDelay: 0.65)
         }
