@@ -1546,15 +1546,17 @@ private final class RepMetroViewModel: NSObject, ObservableObject {
 
             if self.restRemaining == 10 {
                 self.impact(style: .medium)
-                self.stopAudio()
                 self.speak("Ten seconds remaining.")
-            } else if self.restRemaining == 3 {
+            } else if self.restRemaining == 4 {
+                // Fire at 4s so the ~3s countdown finishes before the timer auto-advances
                 self.impact(style: .medium)
-                self.stopAudio()
                 self.speak("Three. Two. One.")
             } else if self.restRemaining <= 0 {
                 self.restTimer?.invalidate()
-                self.skipRest()
+                // Small delay so the last word of the countdown finishes playing
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
+                    self.skipRest()
+                }
             }
         }
     }
