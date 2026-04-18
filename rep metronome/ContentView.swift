@@ -1544,7 +1544,10 @@ private final class RepMetroViewModel: NSObject, ObservableObject {
             guard let self else { return }
             self.restRemaining -= 1
 
-            if self.restRemaining <= 0 {
+            if self.restRemaining == 10 {
+                self.impact(style: .medium)
+                self.speak("Ten seconds remaining.")
+            } else if self.restRemaining <= 0 {
                 self.restTimer?.invalidate()
                 self.skipRest()
             }
