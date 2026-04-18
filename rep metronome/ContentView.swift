@@ -443,6 +443,8 @@ private struct SetupScreen: View {
             .buttonStyle(.plain)
         }
         .onAppear {
+            UIApplication.shared.isIdleTimerDisabled = false
+            viewModel.unduckBackgroundAudio()
             showFields = true
             showExercise = true
             showTempo = true
@@ -487,10 +489,6 @@ private struct ActiveScreen: View {
         .onAppear {
             UIApplication.shared.isIdleTimerDisabled = true
             viewModel.duckBackgroundAudio()
-        }
-        .onDisappear {
-            UIApplication.shared.isIdleTimerDisabled = false
-            viewModel.unduckBackgroundAudio()
         }
     }
 }
@@ -880,8 +878,10 @@ private struct RestScreen: View {
             Spacer()
         }
         .background(AppTheme.deep.ignoresSafeArea())
-        .onAppear { UIApplication.shared.isIdleTimerDisabled = true }
-        .onDisappear { UIApplication.shared.isIdleTimerDisabled = false }
+        .onAppear {
+            UIApplication.shared.isIdleTimerDisabled = true
+            viewModel.unduckBackgroundAudio()
+        }
     }
 }
 
@@ -1597,13 +1597,18 @@ private final class RepMetroViewModel: NSObject, ObservableObject {
 
     private func speak(_ text: String, delay: Double = 0, rate: Float = 1.0) {
         DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+            // Ensure audio session is active before every cue
+            try? AVAudioSession.sharedInstance().setActive(true)
+
             // Try pre-generated bundle audio first (root or AudioCues subfolder)
             if let key = Self.bundleKey(for: text) {
                 let url = Bundle.main.url(forResource: key, withExtension: "mp3")
                     ?? Bundle.main.url(forResource: key, withExtension: "mp3", subdirectory: "AudioCues")
                 if let url, let player = try? AVAudioPlayer(contentsOf: url) {
-                    self.audioPlayers.removeAll { !$0.isPlaying }
+                    // Prune finished players, keep any still playing concurrently
+                    self.audioPlayers = self.audioPlayers.filter { $0.isPlaying }
                     self.audioPlayers.append(player)
+                    player.prepareToPlay()
                     if rate != 1.0 {
                         player.enableRate = true
                         player.rate = rate
@@ -1612,7 +1617,8 @@ private final class RepMetroViewModel: NSObject, ObservableObject {
                     return
                 }
             }
-            // Fallback: system voice
+            // Fallback: system voice — stop any queued utterances first
+            self.speech.stopSpeaking(at: .immediate)
             let utterance = AVSpeechUtterance(string: text)
             utterance.voice = self.bestVoice
             utterance.rate = 0.50
