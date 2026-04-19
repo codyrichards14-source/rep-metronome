@@ -1303,7 +1303,7 @@ private struct PressButtonStyle: ButtonStyle {
 }
 
 
-private final class RepMetroViewModel: NSObject, ObservableObject {
+private final class RepMetroViewModel: NSObject, ObservableObject, AVAudioPlayerDelegate {
     @Published var currentScreen: Screen = .setup
     @Published var showSplash = true
     @Published var showExerciseModal = false
@@ -1600,14 +1600,13 @@ private final class RepMetroViewModel: NSObject, ObservableObject {
                 let url = Bundle.main.url(forResource: key, withExtension: "mp3")
                     ?? Bundle.main.url(forResource: key, withExtension: "mp3", subdirectory: "AudioCues")
                 if let url, let player = try? AVAudioPlayer(contentsOf: url) {
-                    // Prune finished players, keep any still playing concurrently
-                    self.audioPlayers = self.audioPlayers.filter { $0.isPlaying }
-                    self.audioPlayers.append(player)
+                    player.delegate = self
                     player.prepareToPlay()
                     if rate != 1.0 {
                         player.enableRate = true
                         player.rate = rate
                     }
+                    self.audioPlayers.append(player)
                     player.play()
                     return
                 }
@@ -1653,6 +1652,10 @@ private final class RepMetroViewModel: NSObject, ObservableObject {
             if let n = Int(mid) { return "rest_\(n)" }
         }
         return nil
+    }
+
+    func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
+        audioPlayers.removeAll { $0 === player }
     }
 
     private func stopAudio() {
