@@ -562,8 +562,10 @@ private struct PortraitActiveLayout: View {
                     .padding(.bottom, 28)
 
                 Text(viewModel.phaseTitle)
-                    .font(.system(size: 84, weight: .bold, design: .rounded))
-                    .tracking(12)
+                    .font(.system(size: 72, weight: .bold, design: .rounded))
+                    .tracking(4)
+                    .minimumScaleFactor(0.5)
+                    .lineLimit(1)
                     .foregroundStyle(viewModel.isEccentric ? AppTheme.parch : AppTheme.rose)
                     .shadow(color: (viewModel.isEccentric ? AppTheme.parch : AppTheme.rose).opacity(0.25), radius: 24)
                     .animation(.easeInOut(duration: 0.25), value: viewModel.isEccentric)
@@ -659,8 +661,10 @@ private struct LandscapeActiveLayout: View {
                         .padding(.bottom, 10)
 
                     Text(viewModel.phaseTitle)
-                        .font(.system(size: 40, weight: .bold, design: .rounded))
-                        .tracking(6)
+                        .font(.system(size: 36, weight: .bold, design: .rounded))
+                        .tracking(2)
+                        .minimumScaleFactor(0.5)
+                        .lineLimit(1)
                         .foregroundStyle(viewModel.isEccentric ? AppTheme.parch : AppTheme.rose)
                         .animation(.easeInOut(duration: 0.25), value: viewModel.isEccentric)
 
