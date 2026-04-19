@@ -209,8 +209,8 @@ private struct InfoScreen: View {
 
                     // Eccentric / Concentric
                     InfoSection(title: "THE TWO PHASES") {
-                        InfoRow(label: "ECCENTRIC", detail: "The lowering or lengthening phase. Example: descending into a squat, lowering a barbell during a bench press, or the down phase of a curl. This is where the most muscle damage — and growth stimulus — occurs.")
-                        InfoRow(label: "CONCENTRIC", detail: "The lifting or contracting phase. Example: driving out of the squat, pressing the bar up, or curling the weight up. Keep this phase controlled — don't use momentum.")
+                        InfoRow(label: "ECCENTRIC", detail: "The controlled, lengthening phase — the muscle is under load while stretching. For a squat or bench press this is the downward movement, but for exercises like cable pulldowns or rows it's the return movement. This is where the most muscle damage and growth stimulus occurs.")
+                        InfoRow(label: "CONCENTRIC", detail: "The contracting, shortening phase — the muscle fires to move the weight. For a squat this is driving up, for a pulldown it's pulling down. Keep focused and deliberate; don't rely on momentum.")
                     }
 
                     // Features
@@ -739,13 +739,13 @@ private struct BallTracker: View {
             let trailSteps = Int(tBall * Double(steps))
 
             ZStack {
-                Text("UP")
+                Text("CONCENTRIC")
                     .font(.system(size: 8, weight: .medium, design: .monospaced))
                     .tracking(4)
                     .foregroundStyle(AppTheme.parch.opacity(0.5))
                     .position(x: cx, y: 10)
 
-                Text("DOWN")
+                Text("ECCENTRIC")
                     .font(.system(size: 8, weight: .medium, design: .monospaced))
                     .tracking(4)
                     .foregroundStyle(AppTheme.parch.opacity(0.5))
@@ -1383,8 +1383,8 @@ private final class RepMetroViewModel: NSObject, ObservableObject, AVAudioPlayer
     var eccentricSeconds: Int { max(Int(eccentricText) ?? 3, 1) }
     var concentricSeconds: Int { max(Int(concentricText) ?? 1, 1) }
 
-    var phaseTitle: String { isEccentric ? "DOWN" : "UP" }
-    var phaseSubtitle: String { isEccentric ? "ECCENTRIC · LOWER THE WEIGHT" : "CONCENTRIC · DRIVE THE WEIGHT" }
+    var phaseTitle: String { isEccentric ? "ECCENTRIC" : "CONCENTRIC" }
+    var phaseSubtitle: String { isEccentric ? "SLOW · CONTROLLED · LENGTHEN" : "DRIVE · CONTRACT · LIFT" }
     var phaseProgress: Double { min(max(phaseElapsed / max(phaseDuration, 0.1), 0), 1) }
 
     var isLastSet: Bool { currentSet >= totalSets }
